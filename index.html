@@ -89,6 +89,14 @@
       <a class="gestor-follow" href="vagas.html" target="_blank" rel="noopener noreferrer">👀 VER GESTOR</a>
       <p id="gestor-status" class="status" role="status" aria-live="polite"></p>
       <p id="post-status" class="status" role="status" aria-live="polite"></p>
+      <dialog id="duplicate-warning" class="duplicate-warning" aria-labelledby="duplicate-warning-title" aria-describedby="duplicate-warning-message">
+        <h2 id="duplicate-warning-title">⚠️ ATENÇÃO! VAGA DUPLICADA</h2>
+        <p id="duplicate-warning-message" class="duplicate-warning-message"></p>
+        <div class="duplicate-warning-actions">
+          <button id="duplicate-cancel" class="clear-button" type="button">❌ Cancelar, não adicionar</button>
+          <button id="duplicate-confirm" class="whatsapp" type="button">✅ Sim, adicionar mesmo assim</button>
+        </div>
+      </dialog>
 
       <div class="button-row two output-tabs" role="tablist" aria-label="Formato do post">
         <button id="tab-instagram" class="secondary output-tab" type="button" role="tab" aria-selected="true" aria-controls="instagram-panel">INSTAGRAM</button>

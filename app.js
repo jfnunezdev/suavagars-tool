@@ -19,6 +19,10 @@
       var fetchStatus = document.getElementById("fetch-status");
       var postStatus = document.getElementById("post-status");
       var gestorStatus = document.getElementById("gestor-status");
+      var duplicateDialog = document.getElementById("duplicate-warning");
+      var duplicateMessage = document.getElementById("duplicate-warning-message");
+      var duplicateCancelButton = document.getElementById("duplicate-cancel");
+      var duplicateConfirmButton = document.getElementById("duplicate-confirm");
       var imageStatus = document.getElementById("image-status");
       var instagramTab = document.getElementById("tab-instagram");
       var whatsappTab = document.getElementById("tab-whatsapp");
@@ -57,6 +61,60 @@
         editableFields[key].addEventListener("change", function () {
           manualFields[key] = true;
         });
+      });
+
+      function normalizeDuplicateValue(value) {
+        return String(value == null ? "" : value)
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/[.-]/g, "")
+          .trim()
+          .replace(/\s+/g, " ");
+      }
+
+      function duplicateDateLabel(value) {
+        var date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "Data não disponível" : date.toLocaleString("pt-BR");
+      }
+
+      var duplicateConfirmationResolver = null;
+      function resolveDuplicateConfirmation(confirmed) {
+        var resolve = duplicateConfirmationResolver;
+        duplicateConfirmationResolver = null;
+        if (typeof duplicateDialog.close === "function" && duplicateDialog.open) duplicateDialog.close();
+        if (resolve) resolve(confirmed);
+      }
+
+      function confirmDuplicateVacancy(duplicate) {
+        var message = "Você já publicou essa vaga antes:\n" +
+          "Empresa: " + (duplicate.company || "A consultar") + "\n" +
+          "Cargo: " + (duplicate.role || "A consultar") + "\n" +
+          "Publicada em: " + duplicateDateLabel(duplicate.createdAt) + "\n" +
+          "¿Deseja adicionar mesmo assim?";
+        duplicateMessage.textContent = message;
+        if (typeof duplicateDialog.showModal !== "function") {
+          return Promise.resolve(window.confirm("⚠️ ATENÇÃO! VAGA DUPLICADA\n" + message));
+        }
+        return new Promise(function (resolve) {
+          duplicateConfirmationResolver = resolve;
+          duplicateDialog.showModal();
+          duplicateConfirmButton.focus();
+        });
+      }
+
+      duplicateCancelButton.addEventListener("click", function () {
+        resolveDuplicateConfirmation(false);
+      });
+      duplicateConfirmButton.addEventListener("click", function () {
+        resolveDuplicateConfirmation(true);
+      });
+      duplicateDialog.addEventListener("cancel", function (event) {
+        event.preventDefault();
+        resolveDuplicateConfirmation(false);
+      });
+      duplicateDialog.addEventListener("close", function () {
+        if (duplicateConfirmationResolver) resolveDuplicateConfirmation(false);
       });
 
       function isPublicWebLink(parsed) {
@@ -849,20 +907,51 @@
 
         var button = document.getElementById("add-vaga-gestor");
         button.disabled = true;
-        gestorStatus.textContent = "Adicionando vaga ao Meu Gestor...";
+        gestorStatus.textContent = "Verificando se a vaga já está no Meu Gestor...";
         try {
+          var vacancy = {
+            role: roleInput.value.trim(),
+            company: companyInput.value.trim() || "A consultar",
+            city: cityInput.value.trim() || "A consultar",
+            salary: salaryInput.value.trim() || "A consultar",
+            contractType: contractTypeInput.value.trim() || "A consultar",
+            link: link
+          };
+          var listResponse = await fetch("/api/vagas", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: { "Accept": "application/json" }
+          });
+          var listResult = await listResponse.json();
+          if (!listResponse.ok) {
+            throw new Error(listResult && listResult.error ? listResult.error : "Não foi possível verificar as vagas já publicadas.");
+          }
+          if (!listResult || !Array.isArray(listResult.vagas)) {
+            throw new Error("A lista de vagas retornou um formato inválido.");
+          }
+
+          var normalizedCompany = normalizeDuplicateValue(vacancy.company);
+          var normalizedRole = normalizeDuplicateValue(vacancy.role);
+          var duplicate = listResult.vagas.find(function (existing) {
+            return existing &&
+              normalizeDuplicateValue(existing.company) === normalizedCompany &&
+              normalizeDuplicateValue(existing.role) === normalizedRole;
+          });
+          if (duplicate) {
+            var confirmed = await confirmDuplicateVacancy(duplicate);
+            if (!confirmed) {
+              gestorStatus.textContent = "Adição cancelada. A vaga não foi adicionada.";
+              return;
+            }
+          }
+
+          gestorStatus.textContent = "Adicionando vaga ao Meu Gestor...";
           var response = await fetch("/api/vagas", {
             method: "POST",
             credentials: "same-origin",
             headers: { "Content-Type": "application/json", "Accept": "application/json" },
-            body: JSON.stringify({
-              role: roleInput.value.trim(),
-              company: companyInput.value.trim() || "A consultar",
-              city: cityInput.value.trim() || "A consultar",
-              salary: salaryInput.value.trim() || "A consultar",
-              contractType: contractTypeInput.value.trim() || "A consultar",
-              link: link
-            })
+            body: JSON.stringify(vacancy)
           });
           var result = await response.json();
           if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível salvar a vaga.");
