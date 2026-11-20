@@ -18,7 +18,7 @@
       var whatsappStatus = document.getElementById("whatsapp-status");
       var fetchStatus = document.getElementById("fetch-status");
       var postStatus = document.getElementById("post-status");
-      var landingStatus = document.getElementById("landing-status");
+      var gestorStatus = document.getElementById("gestor-status");
       var imageStatus = document.getElementById("image-status");
       var instagramTab = document.getElementById("tab-instagram");
       var whatsappTab = document.getElementById("tab-whatsapp");
@@ -664,7 +664,7 @@
         whatsappPostOutput.value = "";
         fetchStatus.textContent = "";
         postStatus.textContent = "";
-        landingStatus.textContent = "";
+        gestorStatus.textContent = "";
         instagramStatus.textContent = "";
         whatsappStatus.textContent = "";
         imageStatus.textContent = "";
@@ -836,20 +836,20 @@
         postStatus.textContent = "Legendas para Instagram e WhatsApp geradas.";
       });
 
-      document.getElementById("add-vaga-landing").addEventListener("click", async function () {
+      document.getElementById("add-vaga-gestor").addEventListener("click", async function () {
         var link = getValidLink();
         if (!roleInput.value.trim()) {
-          landingStatus.textContent = "Preencha o cargo antes de adicionar a vaga.";
+          gestorStatus.textContent = "Preencha o cargo antes de adicionar a vaga.";
           return;
         }
         if (!link) {
-          landingStatus.textContent = "Informe um link público válido da vaga antes de adicionar.";
+          gestorStatus.textContent = "Informe um link público válido da vaga antes de adicionar.";
           return;
         }
 
-        var button = document.getElementById("add-vaga-landing");
+        var button = document.getElementById("add-vaga-gestor");
         button.disabled = true;
-        landingStatus.textContent = "Adicionando vaga...";
+        gestorStatus.textContent = "Adicionando vaga ao Meu Gestor...";
         try {
           var response = await fetch("/api/vagas", {
             method: "POST",
@@ -866,9 +866,9 @@
           });
           var result = await response.json();
           if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível salvar a vaga.");
-          landingStatus.textContent = "✅ Vaga adicionada na landing!";
+          gestorStatus.textContent = "✅ Vaga adicionada ao Meu Gestor!";
         } catch (error) {
-          landingStatus.textContent = error.message || "Não foi possível adicionar a vaga na landing.";
+          gestorStatus.textContent = error.message || "Não foi possível adicionar a vaga ao Meu Gestor.";
         } finally {
           button.disabled = false;
         }

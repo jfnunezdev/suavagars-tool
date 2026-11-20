@@ -152,6 +152,21 @@ async function writeKvVacancy(vacancy) {
   ]);
 }
 
+async function deleteKvVacancy(id) {
+  const [values] = await kvPipeline([["LRANGE", STORAGE_KEY, "0", String(MAX_VACANCIES - 1)]]);
+  if (!Array.isArray(values)) return false;
+  const storedValue = values.find((value) => {
+    try {
+      return JSON.parse(value).id === id;
+    } catch {
+      return false;
+    }
+  });
+  if (!storedValue) return false;
+  const [removed] = await kvPipeline([["LREM", STORAGE_KEY, "1", storedValue]]);
+  return Number(removed) > 0;
+}
+
 function assertStorageAvailable() {
   if (hasKvConfiguration()) return "kv";
   if (usesVercel()) {
@@ -172,20 +187,32 @@ async function readLocalVacancies() {
   }
 }
 
-async function writeLocalVacancy(vacancy) {
-  const vacancies = await readLocalVacancies();
-  vacancies.unshift(vacancy);
-  const limited = vacancies.slice(0, MAX_VACANCIES);
+async function writeLocalVacancies(vacancies) {
   const directory = path.dirname(LOCAL_STORAGE_PATH);
   await fs.mkdir(directory, { recursive: true });
   const temporaryPath = `${LOCAL_STORAGE_PATH}.${process.pid}.${randomUUID()}.tmp`;
   try {
-    await fs.writeFile(temporaryPath, JSON.stringify(limited, null, 2), "utf8");
+    await fs.writeFile(temporaryPath, JSON.stringify(vacancies.slice(0, MAX_VACANCIES), null, 2), "utf8");
     await fs.rename(temporaryPath, LOCAL_STORAGE_PATH);
   } catch {
     await fs.rm(temporaryPath, { force: true });
     throw new ApiError(500, "Não foi possível salvar a vaga localmente.");
   }
+}
+
+async function writeLocalVacancy(vacancy) {
+  const vacancies = await readLocalVacancies();
+  vacancies.unshift(vacancy);
+  await writeLocalVacancies(vacancies);
+}
+
+async function deleteLocalVacancy(id) {
+  const vacancies = await readLocalVacancies();
+  const index = vacancies.findIndex((vacancy) => vacancy.id === id);
+  if (index === -1) return false;
+  vacancies.splice(index, 1);
+  await writeLocalVacancies(vacancies);
+  return true;
 }
 
 async function handler(request, response) {
@@ -206,9 +233,23 @@ async function handler(request, response) {
     return;
   }
 
+  if (request.method === "DELETE") {
+    try {
+      const body = await readJsonBody(request);
+      const id = boundedText(body && body.id, "id", 128, "");
+      if (!id) throw new ApiError(400, "Informe o identificador da vaga.");
+      const deleted = storage === "kv" ? await deleteKvVacancy(id) : await deleteLocalVacancy(id);
+      if (!deleted) throw new ApiError(404, "Esta vaga não foi encontrada ou já foi apagada.");
+      sendJson(response, 200, { deleted: true, id });
+    } catch (error) {
+      sendJson(response, error.statusCode || 500, { error: error.message || "Não foi possível apagar a vaga." });
+    }
+    return;
+  }
+
   if (request.method !== "POST") {
-    response.setHeader("Allow", "GET, POST");
-    sendJson(response, 405, { error: "Este endpoint aceita somente GET e POST." });
+    response.setHeader("Allow", "GET, POST, DELETE");
+    sendJson(response, 405, { error: "Este endpoint aceita somente GET, POST e DELETE." });
     return;
   }
 

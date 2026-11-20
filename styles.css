@@ -167,7 +167,7 @@
       line-height: 1.4;
     }
 
-    .landing-follow,
+    .gestor-follow,
     .vacancy-apply {
       display: block;
       width: 100%;
@@ -181,7 +181,7 @@
       text-decoration: none;
     }
 
-    .landing-follow:hover,
+    .gestor-follow:hover,
     .vacancy-apply:hover { background: #1db954; }
 
     .vacancy-list {
@@ -225,11 +225,87 @@
       overflow-wrap: anywhere;
     }
 
-    .landing-status {
+    .gestor-status {
       margin: 0 0 12px;
       color: var(--muted);
       text-align: center;
     }
+
+    .vacancy-swipe {
+      position: relative;
+      margin-top: 16px;
+      overflow: hidden;
+      border-radius: 18px;
+      touch-action: pan-y;
+    }
+
+    .vacancy-card {
+      position: relative;
+      z-index: 1;
+      margin-top: 0;
+      transition: transform .22s ease;
+    }
+
+    .vacancy-swipe.is-dragging .vacancy-card { transition: none; }
+    .vacancy-swipe.is-open .vacancy-card { transform: translateX(-112px); }
+
+    .vacancy-delete {
+      position: absolute;
+      z-index: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 112px;
+      height: 100%;
+      min-height: 100%;
+      margin: 0;
+      padding: 10px;
+      border-radius: 0 18px 18px 0;
+      background: #d93025;
+      color: #fff;
+    }
+
+    .vacancy-delete:hover { background: #b3261e; }
+
+    .vacancy-swipe.is-removing {
+      opacity: 0;
+      transform: translateX(-100%);
+      transition: opacity .26s ease, transform .26s ease;
+    }
+
+    .delete-confirmation {
+      width: min(90vw, 420px);
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      color: var(--ink);
+      box-shadow: 0 12px 36px rgba(23, 50, 77, .2);
+    }
+
+    .delete-confirmation:not([open]) { display: none; }
+    .delete-confirmation::backdrop { background: rgba(23, 50, 77, .35); }
+
+    .delete-confirmation-message {
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .delete-confirmation-error {
+      min-height: 24px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .delete-confirmation-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .delete-confirm-button { background: #d93025; }
+    .delete-confirm-button:hover { background: #b3261e; }
 
     .preview-wrap {
       margin-top: 16px;
