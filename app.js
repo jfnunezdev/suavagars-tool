@@ -808,14 +808,15 @@
           "Benefícios:",
           benefits.map(function (item) { return "✔ " + item; }).join("\n"),
           "",
-          "📣 Comente EU QUERO / Link na bio",
+          "📢 Comente EU QUERO / Link na bio",
+          "🔗 Link na bio para se candidatar",
           "@suavagars",
-          "#vagas #caxiasdosul #vagasrs",
-          "ℹ️ O link na legenda não é clicável; use o link na bio.",
-          link ? "🔗 Link na bio para se candidatar" : "🔗 Link na bio"
+          "#vagas #caxiasdosul #vagasrs"
         ];
-        if (link) instagramLines.push(link);
-        instagramCaptionOutput.value = instagramLines.join("\n");
+        instagramCaptionOutput.value = instagramLines.join("\n")
+          .replace(/\b(?:https?:\/\/|www\.)\S+/gi, "")
+          .replace(/[ \t]+\n/g, "\n")
+          .replace(/\n{3,}/g, "\n\n");
 
         var whatsappLines = [
           "*🔥 VAGA NOVA - " + role + "*",
