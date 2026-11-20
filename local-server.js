@@ -11,8 +11,15 @@ const mimeTypes = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".json": "application/manifest+json; charset=utf-8",
   ".png": "image/png"
 };
+const publicAssets = new Map([
+  ["/manifest.json", path.join("public", "manifest.json")],
+  ["/sw.js", path.join("public", "sw.js")],
+  ["/icon-192.png", path.join("public", "icon-192.png")],
+  ["/icon-512.png", path.join("public", "icon-512.png")]
+]);
 const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url, "http://127.0.0.1");
   if (requestUrl.pathname === "/api/vaga") {
@@ -37,7 +44,7 @@ const server = http.createServer((request, response) => {
     response.end("Invalid path");
     return;
   }
-  const relativePath = pathname === "/" ? "index.html" : pathname.slice(1);
+  const relativePath = publicAssets.get(pathname) || (pathname === "/" ? "index.html" : pathname.slice(1));
   const filePath = path.resolve(root, relativePath);
   if (filePath !== root && !filePath.startsWith(root + path.sep)) {
     response.writeHead(403);
