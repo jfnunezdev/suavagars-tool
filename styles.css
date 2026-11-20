@@ -167,6 +167,70 @@
       line-height: 1.4;
     }
 
+    .landing-follow,
+    .vacancy-apply {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 13px 16px;
+      border-radius: 11px;
+      background: var(--green);
+      color: #08351a;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .landing-follow:hover,
+    .vacancy-apply:hover { background: #1db954; }
+
+    .vacancy-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .vacancy-card h2 {
+      margin-bottom: 12px;
+      font-size: clamp(1.25rem, 5vw, 1.55rem);
+    }
+
+    .vacancy-example {
+      display: inline-block;
+      margin: 0 0 8px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--blue-light);
+      color: var(--blue);
+      font-size: .76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .vacancy-details {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+      margin: 0;
+    }
+
+    .vacancy-detail dt {
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .vacancy-detail dd {
+      margin: 0;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .landing-status {
+      margin: 0 0 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
     .preview-wrap {
       margin-top: 16px;
       overflow: hidden;
@@ -187,4 +251,5 @@
       body { padding-top: 32px; }
       .card { padding: 24px; }
       .button-row.two { grid-template-columns: 1fr 1fr; }
+      .vacancy-details { grid-template-columns: 1fr 1fr; }
     }

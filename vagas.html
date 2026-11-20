@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#EAF6FF">
+  <meta name="description" content="Vagas atualizadas em Caxias do Sul pela Sua Vaga RS.">
+  <title>Vagas em Caxias do Sul - Sua Vaga RS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <header>
+      <img src="logo.png" alt="Sua Vaga RS">
+      <h1>🔥 Vagas em Caxias do Sul - @suavagars</h1>
+      <p class="intro">Vagas atualizadas todos os dias</p>
+      <a class="landing-follow" href="https://instagram.com/suavagars" target="_blank" rel="noopener noreferrer">📱 Seguir @suavagars</a>
+    </header>
+
+    <section aria-label="Vagas disponíveis">
+      <p id="landing-status" class="landing-status" role="status" aria-live="polite">Carregando vagas...</p>
+      <div id="vacancy-list" class="vacancy-list"></div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var vacancyList = document.getElementById("vacancy-list");
+      var status = document.getElementById("landing-status");
+      var examples = [
+        {
+          role: "Auxiliar de Produção",
+          company: "Empresa Confidencial",
+          city: "Caxias do Sul - RS",
+          salary: "A consultar",
+          contractType: "A consultar",
+          link: "https://www.catho.com.br/vagas/?q=auxiliar%20de%20produ%C3%A7%C3%A3o",
+          example: true
+        },
+        {
+          role: "Vendedor Externo",
+          company: "Empresa Confidencial",
+          city: "Caxias do Sul - RS",
+          salary: "A consultar",
+          contractType: "A consultar",
+          link: "https://www.catho.com.br/vagas/?q=vendedor%20externo",
+          example: true
+        },
+        {
+          role: "Assistente Administrativo",
+          company: "Empresa Confidencial",
+          city: "Caxias do Sul - RS",
+          salary: "A consultar",
+          contractType: "A consultar",
+          link: "https://www.catho.com.br/vagas/?q=assistente%20administrativo",
+          example: true
+        }
+      ];
+
+      function safeVacancyUrl(value) {
+        try {
+          var url = new URL(value);
+          return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
+        } catch (error) {
+          return "";
+        }
+      }
+
+      function addDetail(list, label, value) {
+        var item = document.createElement("div");
+        item.className = "vacancy-detail";
+        var term = document.createElement("dt");
+        term.textContent = label;
+        var description = document.createElement("dd");
+        description.textContent = value || "A consultar";
+        item.appendChild(term);
+        item.appendChild(description);
+        list.appendChild(item);
+      }
+
+      function renderVacancies(vacancies) {
+        vacancyList.replaceChildren();
+        vacancies.forEach(function (vacancy) {
+          var card = document.createElement("article");
+          card.className = "card vacancy-card";
+
+          if (vacancy.example) {
+            var exampleTag = document.createElement("span");
+            exampleTag.className = "vacancy-example";
+            exampleTag.textContent = "Exemplo demonstrativo";
+            card.appendChild(exampleTag);
+          }
+
+          var title = document.createElement("h2");
+          title.textContent = vacancy.role || "Cargo a consultar";
+          card.appendChild(title);
+
+          var details = document.createElement("dl");
+          details.className = "vacancy-details";
+          addDetail(details, "Empresa", vacancy.company);
+          addDetail(details, "📍 Cidade", vacancy.city);
+          addDetail(details, "💰 Salário", vacancy.salary);
+          addDetail(details, "📄 Tipo", vacancy.contractType);
+          card.appendChild(details);
+
+          var link = safeVacancyUrl(vacancy.link);
+          if (link) {
+            var apply = document.createElement("a");
+            apply.className = "vacancy-apply";
+            apply.href = link;
+            apply.target = "_blank";
+            apply.rel = "noopener noreferrer";
+            apply.textContent = "👉 QUERO ESSA VAGA";
+            card.appendChild(apply);
+          }
+          vacancyList.appendChild(card);
+        });
+      }
+
+      fetch("/api/vagas", { headers: { "Accept": "application/json" } })
+        .then(function (response) {
+          if (!response.ok) throw new Error("A API não está disponível.");
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || !Array.isArray(data.vagas)) throw new Error("A lista de vagas está inválida.");
+          renderVacancies(data.vagas);
+          status.textContent = data.vagas.length
+            ? "Vagas publicadas pela Sua Vaga RS."
+            : "Ainda não há vagas publicadas.";
+        })
+        .catch(function () {
+          renderVacancies(examples);
+          status.textContent = "A lista não pôde ser carregada. Exibindo 3 exemplos demonstrativos.";
+        });
+    }());
+  </script>
+</body>
+</html>

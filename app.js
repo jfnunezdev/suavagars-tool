@@ -18,6 +18,7 @@
       var whatsappStatus = document.getElementById("whatsapp-status");
       var fetchStatus = document.getElementById("fetch-status");
       var postStatus = document.getElementById("post-status");
+      var landingStatus = document.getElementById("landing-status");
       var imageStatus = document.getElementById("image-status");
       var instagramTab = document.getElementById("tab-instagram");
       var whatsappTab = document.getElementById("tab-whatsapp");
@@ -663,6 +664,7 @@
         whatsappPostOutput.value = "";
         fetchStatus.textContent = "";
         postStatus.textContent = "";
+        landingStatus.textContent = "";
         instagramStatus.textContent = "";
         whatsappStatus.textContent = "";
         imageStatus.textContent = "";
@@ -832,6 +834,44 @@
         whatsappLines.push(link ? "👉 Candidate-se aqui: " + link : "👉 Link na bio / Chama no direct");
         whatsappPostOutput.value = whatsappLines.join("\n");
         postStatus.textContent = "Legendas para Instagram e WhatsApp geradas.";
+      });
+
+      document.getElementById("add-vaga-landing").addEventListener("click", async function () {
+        var link = getValidLink();
+        if (!roleInput.value.trim()) {
+          landingStatus.textContent = "Preencha o cargo antes de adicionar a vaga.";
+          return;
+        }
+        if (!link) {
+          landingStatus.textContent = "Informe um link público válido da vaga antes de adicionar.";
+          return;
+        }
+
+        var button = document.getElementById("add-vaga-landing");
+        button.disabled = true;
+        landingStatus.textContent = "Adicionando vaga...";
+        try {
+          var response = await fetch("/api/vagas", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({
+              role: roleInput.value.trim(),
+              company: companyInput.value.trim() || "A consultar",
+              city: cityInput.value.trim() || "A consultar",
+              salary: salaryInput.value.trim() || "A consultar",
+              contractType: contractTypeInput.value.trim() || "A consultar",
+              link: link
+            })
+          });
+          var result = await response.json();
+          if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível salvar a vaga.");
+          landingStatus.textContent = "✅ Vaga adicionada na landing!";
+        } catch (error) {
+          landingStatus.textContent = error.message || "Não foi possível adicionar a vaga na landing.";
+        } finally {
+          button.disabled = false;
+        }
       });
 
       async function copyOutput(output, status) {

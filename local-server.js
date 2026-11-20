@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
 const vagaHandler = require("./api/vaga");
+const vagasHandler = require("./api/vagas");
 
 const root = __dirname;
 const mimeTypes = {
@@ -16,6 +17,10 @@ const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url, "http://127.0.0.1");
   if (requestUrl.pathname === "/api/vaga") {
     vagaHandler(request, response);
+    return;
+  }
+  if (requestUrl.pathname === "/api/vagas") {
+    vagasHandler(request, response);
     return;
   }
   if (request.method !== "GET" && request.method !== "HEAD") {
