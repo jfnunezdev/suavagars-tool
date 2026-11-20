@@ -990,11 +990,11 @@
       });
 
       document.getElementById("share-whatsapp").addEventListener("click", function () {
-        if (!whatsappPostOutput.value) {
-          whatsappStatus.textContent = "Gere o texto antes de compartilhar.";
-          return;
-        }
-        window.open("https://wa.me/?text=" + encodeURIComponent(whatsappPostOutput.value), "_blank", "noopener,noreferrer");
+        window.open("https://whatsapp.com/channel/0029VbEAoWKHwXb8eaOKcQ2p", "_blank", "noopener,noreferrer");
+      });
+
+      document.getElementById("visit-instagram").addEventListener("click", function () {
+        window.open("https://instagram.com/suavagars", "_blank", "noopener,noreferrer");
       });
 
       function roundedRect(ctx, x, y, width, height, radius) {

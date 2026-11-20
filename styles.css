@@ -127,6 +127,8 @@
       margin-top: 12px;
     }
 
+    .social-links-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
     .output-tabs { grid-template-columns: 1fr 1fr; }
     .output-tab[aria-selected="true"] {
       border-color: var(--blue);
