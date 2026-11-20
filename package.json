@@ -1,0 +1,12 @@
+{
+  "name": "sua-vaga-rs-gerador-de-posts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gerador de posts Sua Vaga RS com extração segura de dados de vagas",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node local-server.js"
+  }
+}
