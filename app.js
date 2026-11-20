@@ -810,11 +810,10 @@
           "Benefícios:",
           benefits.map(function (item) { return "✔ " + item; }).join("\n"),
           "",
-          "📢 Comente EU QUERO / Link na bio",
+          "📣 Comente EU QUERO / Link na bio",
           "🔗 Link na bio para se candidatar",
-          "@suavagars",
           "#vagas #caxiasdosul #vagasrs",
-          "📲 Vagas todos os dias no meu Canal do WhatsApp - Link na bio @suavagars"
+          "📌 Vagas todos os dias no meu Canal do WhatsApp - Link na bio"
         ];
         instagramCaptionOutput.value = instagramLines.join("\n")
           .replace(/\b(?:https?:\/\/|www\.)\S+/gi, "")
