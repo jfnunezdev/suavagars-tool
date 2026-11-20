@@ -27,6 +27,7 @@
       var context = canvas.getContext("2d");
       var preview = document.getElementById("image-preview");
       var imageUrl = "";
+      var generatedImageBlob = null;
       var manualFields = {};
       var lastAutoValues = {};
 
@@ -667,9 +668,12 @@
         imageStatus.textContent = "";
         if (imageUrl) URL.revokeObjectURL(imageUrl);
         imageUrl = "";
+        generatedImageBlob = null;
         preview.removeAttribute("src");
         document.getElementById("preview-wrap").hidden = true;
         document.getElementById("download-image").disabled = true;
+        document.getElementById("btnCopiarImagem").disabled = true;
+        document.getElementById("btnCompartilharImagem").hidden = true;
         setOutputTab("instagram");
         linkInput.focus();
       });
@@ -918,6 +922,9 @@
           return;
         }
 
+        generatedImageBlob = null;
+        document.getElementById("btnCopiarImagem").disabled = true;
+        document.getElementById("btnCompartilharImagem").hidden = true;
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.fillStyle = "#FFFFFF";
         context.fillRect(0, 0, 1080, 1080);
@@ -1026,12 +1033,72 @@
             imageStatus.textContent = "Não foi possível criar a imagem. Tente novamente.";
             return;
           }
+          generatedImageBlob = blob;
           imageUrl = URL.createObjectURL(blob);
           preview.src = imageUrl;
           document.getElementById("preview-wrap").hidden = false;
           document.getElementById("download-image").disabled = false;
+          document.getElementById("btnCopiarImagem").disabled = false;
           imageStatus.textContent = "Imagem pronta. Você pode baixar e publicar.";
         }, "image/png");
+      });
+
+      document.getElementById("btnCopiarImagem").addEventListener("click", async function () {
+        if (!generatedImageBlob) {
+          imageStatus.textContent = "Gere a imagem antes de copiá-la.";
+          return;
+        }
+
+        var copyButton = document.getElementById("btnCopiarImagem");
+        var shareButton = document.getElementById("btnCompartilharImagem");
+        var ClipboardItemConstructor = window.ClipboardItem ||
+          (typeof ClipboardItem !== "undefined" ? ClipboardItem : null);
+        copyButton.disabled = true;
+        try {
+          if (!navigator.clipboard || typeof navigator.clipboard.write !== "function" ||
+              !ClipboardItemConstructor) {
+            throw new Error("Este navegador não permite copiar imagens diretamente.");
+          }
+          await navigator.clipboard.write([
+            new ClipboardItemConstructor({ "image/png": generatedImageBlob })
+          ]);
+          shareButton.hidden = true;
+          imageStatus.textContent = "✅ Imagem copiada! Agora abra o Instagram e cole direto no post.";
+        } catch (error) {
+          shareButton.hidden = false;
+          imageStatus.textContent = "Não foi possível copiar a imagem. Use COMPARTILHAR IMAGEM ou BAIXAR IMAGEM.";
+        } finally {
+          copyButton.disabled = !generatedImageBlob;
+        }
+      });
+
+      document.getElementById("btnCompartilharImagem").addEventListener("click", async function () {
+        if (!generatedImageBlob) {
+          imageStatus.textContent = "Gere a imagem antes de compartilhá-la.";
+          return;
+        }
+        if (typeof navigator.share !== "function" || typeof File === "undefined") {
+          imageStatus.textContent = "Este navegador não permite compartilhar arquivos. Use BAIXAR IMAGEM.";
+          return;
+        }
+
+        var imageFile = new File([generatedImageBlob], "sua-vaga-rs.png", { type: "image/png" });
+        if (typeof navigator.canShare === "function" && !navigator.canShare({ files: [imageFile] })) {
+          imageStatus.textContent = "Este navegador não permite compartilhar arquivos. Use BAIXAR IMAGEM.";
+          return;
+        }
+        try {
+          await navigator.share({
+            files: [imageFile],
+            title: "Sua Vaga RS - Vaga",
+            text: "Imagem da vaga pronta para compartilhar."
+          });
+          imageStatus.textContent = "Imagem compartilhada.";
+        } catch (error) {
+          imageStatus.textContent = error && error.name === "AbortError"
+            ? "Compartilhamento cancelado."
+            : "Não foi possível compartilhar a imagem. Use BAIXAR IMAGEM.";
+        }
       });
 
       document.getElementById("download-image").addEventListener("click", function () {
