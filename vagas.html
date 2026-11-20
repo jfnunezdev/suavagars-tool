@@ -15,6 +15,7 @@
       <h1>🔥 Vagas em Caxias do Sul - @suavagars</h1>
       <p class="intro">Vagas atualizadas todos os dias</p>
       <a class="landing-follow" href="https://instagram.com/suavagars" target="_blank" rel="noopener noreferrer">📱 Seguir @suavagars</a>
+      <a class="landing-follow" href="https://whatsapp.com/channel/0029VbEAoWKHwXb8eaOKcQ2p" target="_blank" rel="noopener noreferrer">💬 ENTRAR NO CANAL DO WHATSAPP</a>
     </header>
 
     <section aria-label="Vagas disponíveis">
@@ -29,35 +30,6 @@
 
       var vacancyList = document.getElementById("vacancy-list");
       var status = document.getElementById("landing-status");
-      var examples = [
-        {
-          role: "Auxiliar de Produção",
-          company: "Empresa Confidencial",
-          city: "Caxias do Sul - RS",
-          salary: "A consultar",
-          contractType: "A consultar",
-          link: "https://www.catho.com.br/vagas/?q=auxiliar%20de%20produ%C3%A7%C3%A3o",
-          example: true
-        },
-        {
-          role: "Vendedor Externo",
-          company: "Empresa Confidencial",
-          city: "Caxias do Sul - RS",
-          salary: "A consultar",
-          contractType: "A consultar",
-          link: "https://www.catho.com.br/vagas/?q=vendedor%20externo",
-          example: true
-        },
-        {
-          role: "Assistente Administrativo",
-          company: "Empresa Confidencial",
-          city: "Caxias do Sul - RS",
-          salary: "A consultar",
-          contractType: "A consultar",
-          link: "https://www.catho.com.br/vagas/?q=assistente%20administrativo",
-          example: true
-        }
-      ];
 
       function safeVacancyUrl(value) {
         try {
@@ -81,17 +53,12 @@
       }
 
       function renderVacancies(vacancies) {
-        vacancyList.replaceChildren();
+        while (vacancyList.firstChild) {
+          vacancyList.removeChild(vacancyList.firstChild);
+        }
         vacancies.forEach(function (vacancy) {
           var card = document.createElement("article");
           card.className = "card vacancy-card";
-
-          if (vacancy.example) {
-            var exampleTag = document.createElement("span");
-            exampleTag.className = "vacancy-example";
-            exampleTag.textContent = "Exemplo demonstrativo";
-            card.appendChild(exampleTag);
-          }
 
           var title = document.createElement("h2");
           title.textContent = vacancy.role || "Cargo a consultar";
@@ -119,7 +86,7 @@
         });
       }
 
-      fetch("/api/vagas", { headers: { "Accept": "application/json" } })
+      fetch("/api/vagas", { cache: "no-store", headers: { "Accept": "application/json" } })
         .then(function (response) {
           if (!response.ok) throw new Error("A API não está disponível.");
           return response.json();
@@ -132,8 +99,7 @@
             : "Ainda não há vagas publicadas.";
         })
         .catch(function () {
-          renderVacancies(examples);
-          status.textContent = "A lista não pôde ser carregada. Exibindo 3 exemplos demonstrativos.";
+          status.textContent = "A lista não pôde ser carregada. Tente atualizar a página em instantes.";
         });
     }());
   </script>

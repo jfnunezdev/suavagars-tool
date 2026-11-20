@@ -813,7 +813,8 @@
           "📢 Comente EU QUERO / Link na bio",
           "🔗 Link na bio para se candidatar",
           "@suavagars",
-          "#vagas #caxiasdosul #vagasrs"
+          "#vagas #caxiasdosul #vagasrs",
+          "📲 Vagas todos os dias no meu Canal do WhatsApp - Link na bio @suavagars"
         ];
         instagramCaptionOutput.value = instagramLines.join("\n")
           .replace(/\b(?:https?:\/\/|www\.)\S+/gi, "")
