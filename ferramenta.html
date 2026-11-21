@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name=
+  "viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sua Vaga RS">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <title>Sua Vaga RS - Gerador de Posts</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <nav class="app-nav" aria-label="Navegação principal">
+      <a href="ferramenta.html" aria-current="page">EDITOR DE POST</a>
+      <a href="vagas.html">MEU GESTOR</a>
+    </nav>
+    <header>
+      <img src="logo.png" alt="Sua Vaga RS">
+      <h1>Sua Vaga RS - Gerador de Posts</h1>
+      <p class="intro">Transforme o link da vaga em um post pronto para compartilhar.</p>
+      <a class="gestor-follow" href="vagas.html">📋 IR PARA MEU GESTOR</a>
+    </header>
+
+    <section class="card" aria-labelledby="text-heading">
+      <h2 id="text-heading">Gerador de texto</h2>
+      <div class="field">
+        <label for="linkVaga">🔗 Cole o link da vaga para buscar os dados</label>
+        <input id="linkVaga" type="url" inputmode="url" placeholder="Cole o link da vaga e clique em “Buscar dados do link”" autocomplete="url">
+      </div>
+      <button id="fetch-button" class="secondary" type="button">Buscar dados do link</button>
+      <p id="fetch-status" class="status" role="status" aria-live="polite"></p>
+
+      <div class="field">
+        <label for="company">Empresa</label>
+        <input id="company" type="text" value="A consultar" placeholder="Ex: Carrefour" autocomplete="organization">
+      </div>
+      <div class="field">
+        <label for="role">Cargo</label>
+        <input id="role" type="text" placeholder="Ex: Operador de Caixa">
+      </div>
+      <div class="field">
+        <label for="salary">Salário</label>
+        <input id="salary" type="text" value="A consultar" placeholder="Ex: R$ 2.500,00">
+      </div>
+      <div class="field">
+        <label for="city">Cidade</label>
+        <input id="city" type="text" value="A consultar" autocomplete="address-level2">
+      </div>
+      <div class="field">
+        <label for="model">Modelo</label>
+        <input id="model" type="text" value="A consultar" placeholder="Ex: Presencial, híbrido ou remoto">
+      </div>
+      <div class="field">
+        <label for="contract-type">Tipo de Contratação</label>
+        <select id="contract-type">
+          <option value="">Selecione...</option>
+          <option value="A consultar" selected>A consultar</option>
+          <option value="CLT (Efetivo)">CLT (Efetivo)</option>
+          <option value="Efetivo - CLT">Efetivo - CLT</option>
+          <option value="Temporário">Temporário</option>
+          <option value="Estágio">Estágio</option>
+          <option value="PJ">PJ</option>
+          <option value="Diarista">Diarista</option>
+          <option value="Tempo integral">Tempo integral</option>
+          <option value="Meio período">Meio período</option>
+          <option value="Contrato">Contrato</option>
+          <option value="Voluntário">Voluntário</option>
+          <option value="A combinar">A combinar</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="schedule">Horário / Turno</label>
+        <input id="schedule" type="text" value="A consultar">
+      </div>
+      <div class="field">
+        <label for="activities">Atividades</label>
+        <textarea id="activities" placeholder="Atividades da vaga"></textarea>
+      </div>
+      <div class="field">
+        <label for="benefits">Benefícios</label>
+        <input id="benefits" type="text" placeholder="Opcional">
+      </div>
+      <div class="field">
+        <label for="requirements">Requisitos</label>
+        <input id="requirements" type="text" placeholder="Opcional">
+      </div>
+      <div class="button-row generate-actions">
+        <button id="generate-post" type="button">GERAR POST</button>
+        <button id="new-job" class="clear-button" type="button">🔄 NOVA VAGA / LIMPAR</button>
+      </div>
+      <div class="button-row">
+        <button id="add-vaga-gestor" class="whatsapp" type="button">➕ ADICIONAR ESSA VAGA AO GESTOR</button>
+      </div>
+      <a class="gestor-follow" href="vagas.html" target="_blank" rel="noopener noreferrer">👀 VER GESTOR</a>
+      <p id="gestor-status" class="status" role="status" aria-live="polite"></p>
+      <p id="post-status" class="status" role="status" aria-live="polite"></p>
+      <dialog id="duplicate-warning" class="duplicate-warning" aria-labelledby="duplicate-warning-title" aria-describedby="duplicate-warning-message">
+        <h2 id="duplicate-warning-title">⚠️ ATENÇÃO! VAGA DUPLICADA</h2>
+        <p id="duplicate-warning-message" class="duplicate-warning-message"></p>
+        <div class="duplicate-warning-actions">
+          <button id="duplicate-cancel" class="clear-button" type="button">❌ Cancelar, não adicionar</button>
+          <button id="duplicate-confirm" class="whatsapp" type="button">✅ Sim, adicionar mesmo assim</button>
+        </div>
+      </dialog>
+
+      <div class="button-row two output-tabs" role="tablist" aria-label="Formato do post">
+        <button id="tab-instagram" class="secondary output-tab" type="button" role="tab" aria-selected="true" aria-controls="instagram-panel">INSTAGRAM</button>
+        <button id="tab-whatsapp" class="secondary output-tab" type="button" role="tab" aria-selected="false" aria-controls="whatsapp-panel">WHATSAPP</button>
+      </div>
+
+      <section id="instagram-panel" class="output-panel" role="tabpanel" aria-labelledby="tab-instagram">
+        <section class="card" aria-labelledby="image-heading">
+          <h2 id="image-heading">Imagem para Instagram</h2>
+          <p class="intro">Gere a arte quadrada para acompanhar a legenda.</p>
+          <div class="button-row">
+            <button id="generate-image" type="button">GERAR IMAGEM PARA INSTAGRAM</button>
+            <button id="download-image" class="secondary" type="button" disabled>BAIXAR IMAGEM</button>
+            <button id="btnCopiarImagem" class="whatsapp" type="button" disabled>📋 COPIAR IMAGEM</button>
+            <button id="btnCompartilharImagem" class="whatsapp" type="button" hidden>📤 COMPARTILHAR IMAGEM</button>
+          </div>
+          <p id="image-status" class="status" role="status" aria-live="polite"></p>
+          <div id="preview-wrap" class="preview-wrap" hidden>
+            <img id="image-preview" alt="Prévia da imagem da vaga">
+          </div>
+        </section>
+        <div class="field output-field">
+          <label for="instagram-caption">Legenda para Instagram</label>
+          <textarea id="instagram-caption" placeholder="A legenda aparecerá aqui." readonly></textarea>
+        </div>
+        <button id="copy-instagram" class="secondary" type="button">COPIAR LEGENDA</button>
+        <p class="instagram-link-notice">⚠️ Lembre-se: atualize o link na sua bio com o link desta vaga antes de publicar.</p>
+        <p id="instagram-status" class="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="whatsapp-panel" class="output-panel" role="tabpanel" aria-labelledby="tab-whatsapp" hidden>
+        <div class="field output-field">
+          <label for="whatsapp-post">Texto para WhatsApp</label>
+          <textarea id="whatsapp-post" placeholder="O texto aparecerá aqui." readonly></textarea>
+        </div>
+        <div class="button-row two">
+          <button id="copy-whatsapp" class="secondary" type="button">COPIAR TEXTO</button>
+        </div>
+        <p id="whatsapp-status" class="status" role="status" aria-live="polite"></p>
+      </section>
+      <div class="button-row social-links-row">
+        <button id="visit-instagram" class="whatsapp" type="button">📸 IR MEU INSTAGRAM</button>
+        <button id="share-whatsapp" class="whatsapp" type="button">📢 CANAL DE WHATSAPP</button>
+      </div>
+    </section>
+  </main>
+
+  <canvas id="post-canvas" width="1080" height="1080" hidden></canvas>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

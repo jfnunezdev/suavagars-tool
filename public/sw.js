@@ -4,6 +4,7 @@ const CACHE_NAME = "sua-vaga-rs-pwa-v1";
 const APP_SHELL = [
   "/",
   "/index.html",
+  "/ferramenta.html",
   "/styles.css",
   "/app.js",
   "/logo.png",
