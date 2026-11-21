@@ -118,6 +118,8 @@
       var trackedPendingIds = null;
       var notificationAudioContext = null;
       var titleBlinkTimer = null;
+      var reminderTimer = null;
+      var pendingAlertActive = false;
       var originalPageTitle = document.title;
 
       function showLogin(message) {
@@ -125,7 +127,8 @@
           window.clearInterval(refreshTimer);
           refreshTimer = null;
         }
-        stopTitleBlink();
+        stopPendingReminder();
+        trackedPendingIds = null;
         loginPanel.hidden = false;
         managerPanel.hidden = true;
         if (message) loginStatus.textContent = message;
@@ -160,11 +163,11 @@
       function scheduleChimeTone(frequency, startTime, duration) {
         var oscillator = notificationAudioContext.createOscillator();
         var volume = notificationAudioContext.createGain();
-        oscillator.type = "triangle";
+        oscillator.type = "sine";
         oscillator.frequency.setValueAtTime(frequency, startTime);
         volume.gain.setValueAtTime(0.0001, startTime);
-        volume.gain.exponentialRampToValueAtTime(0.9, startTime + 0.04);
-        volume.gain.setValueAtTime(0.9, startTime + duration - 0.12);
+        volume.gain.exponentialRampToValueAtTime(0.28, startTime + 0.04);
+        volume.gain.setValueAtTime(0.28, startTime + duration - 0.08);
         volume.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
         oscillator.connect(volume);
         volume.connect(notificationAudioContext.destination);
@@ -179,9 +182,9 @@
         }
         var playChime = function () {
           for (var repetition = 0; repetition < 3; repetition += 1) {
-            var startTime = notificationAudioContext.currentTime + 0.08 + repetition * 2.15;
-            scheduleChimeTone(880, startTime, 0.82);
-            scheduleChimeTone(659.25, startTime + 0.95, 0.82);
+            var startTime = notificationAudioContext.currentTime + 0.08 + repetition * 1.25;
+            scheduleChimeTone(784, startTime, 0.3);
+            scheduleChimeTone(659.25, startTime + 0.36, 0.34);
           }
         };
         if (notificationAudioContext.state === "suspended") {
@@ -211,9 +214,28 @@
         document.title = originalPageTitle;
       }
 
-      function notifyNewApplications() {
-        startTitleBlink();
-        playNotificationSound();
+      function startPendingReminder(notifyImmediately) {
+        pendingAlertActive = true;
+        if (notifyImmediately) {
+          startTitleBlink();
+          playNotificationSound();
+        }
+        if (!reminderTimer) {
+          reminderTimer = window.setInterval(function () {
+            if (!pendingAlertActive) return;
+            startTitleBlink();
+            playNotificationSound();
+          }, 300000);
+        }
+      }
+
+      function stopPendingReminder() {
+        pendingAlertActive = false;
+        if (reminderTimer) {
+          window.clearInterval(reminderTimer);
+          reminderTimer = null;
+        }
+        stopTitleBlink();
       }
 
       document.addEventListener("pointerdown", unlockNotificationAudio, { once: true });
@@ -358,15 +380,20 @@
           }
           var applications = results[0].solicitacoes;
           var currentPendingIds = new Set(applications.map(function (application) { return application.id; }));
+          var isFirstPendingLoad = trackedPendingIds === null;
           var pendingListChanged = trackedPendingIds === null ||
             currentPendingIds.size !== trackedPendingIds.size ||
             Array.from(currentPendingIds).some(function (id) { return !trackedPendingIds.has(id); });
-          var hasNewApplications = trackedPendingIds !== null &&
+          var hasNewApplications = !isFirstPendingLoad &&
             Array.from(currentPendingIds).some(function (id) { return !trackedPendingIds.has(id); });
           trackedPendingIds = currentPendingIds;
           if (pendingListChanged) renderPending(applications);
           renderPublished(results[1].vagas);
-          if (hasNewApplications) notifyNewApplications();
+          if (!applications.length) {
+            stopPendingReminder();
+          } else {
+            startPendingReminder(isFirstPendingLoad || hasNewApplications);
+          }
         } catch (error) {
           pendingStatus.textContent = error.message || "Não foi possível carregar as solicitações.";
           publishedStatus.textContent = "Atualize a página para tentar novamente.";
