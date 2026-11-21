@@ -10,6 +10,8 @@
 
 * { box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
+
 body {
   margin: 0;
   background: #f4f8fb;
@@ -45,6 +47,9 @@ body {
 
 .site-sidebar a:hover,
 .site-sidebar a:focus-visible { background: #e7f2fa; }
+
+.mobile-menu-toggle,
+.mobile-search-link { display: none; }
 
 .page-content { min-width: 0; }
 
@@ -341,15 +346,78 @@ footer {
 }
 
 @media (max-width: 520px) {
+  body { padding-top: 68px; }
   .public-layout { display: block; }
   .site-sidebar {
-    position: static;
-    grid-template-columns: 1fr 1fr;
-    padding: 8px 12px;
+    position: fixed;
+    z-index: 999;
+    top: 68px;
+    right: 0;
+    left: 0;
+    display: none;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 10px 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+    box-shadow: 0 8px 16px rgba(8, 24, 55, .16);
   }
-  .site-sidebar a { padding: 10px; text-align: center; }
-  .header-inner { min-height: 108px; }
-  .brand-logo { height: 64px; }
+  .site-sidebar.is-open { display: grid; }
+  .site-sidebar a {
+    padding: 13px 15px;
+    text-align: left;
+  }
+  .site-sidebar .mobile-search-link { display: block; }
+  .site-header {
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    right: 0;
+    left: 0;
+    box-shadow: 0 3px 12px rgba(8, 24, 55, .2);
+  }
+  .header-inner {
+    width: 100%;
+    min-height: 68px;
+    padding: 8px 14px;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    grid-template-areas: "logo brand menu";
+    gap: 10px;
+    text-align: left;
+  }
+  .brand-logo {
+    grid-area: logo;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+  }
+  .brand-name {
+    grid-area: brand;
+    margin: 0;
+    font-size: 20px;
+  }
+  .location { display: none; }
+  .mobile-menu-toggle {
+    grid-area: menu;
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--blue-dark);
+    font-size: 32px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .mobile-menu-toggle:focus-visible { outline: 3px solid #f0ad24; outline-offset: 2px; }
+  .hero,
+  .company-section { scroll-margin-top: 82px; }
+  .search-box input { scroll-margin-top: 82px; }
   .hero { padding-top: 30px; }
   .search-box { grid-template-columns: 1fr; }
   .search-box button { width: 100%; }

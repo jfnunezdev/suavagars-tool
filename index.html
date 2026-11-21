@@ -15,14 +15,18 @@
       <img src="logo.png" alt="" class="brand-logo">
       <p class="brand-name">SUAVAGARS</p>
       <p class="location">Vagas de emprego em Caxias do Sul</p>
+      <button id="mobile-menu-toggle" class="mobile-menu-toggle" type="button" aria-controls="site-navigation" aria-expanded="false" aria-label="Abrir menu de navegação">
+        <span aria-hidden="true">☰</span>
+      </button>
     </div>
   </header>
 
   <main class="public-layout">
-    <aside class="site-sidebar" aria-label="Navegação do site">
+    <nav id="site-navigation" class="site-sidebar" aria-label="Navegação do site">
       <a href="#vagas">Vagas abertas</a>
       <a href="#empresas">Para empresas</a>
-    </aside>
+      <a id="mobile-search-link" class="mobile-search-link" href="#search-input">Buscar</a>
+    </nav>
 
     <div class="page-content">
       <section id="vagas" class="hero" aria-labelledby="hero-title">
@@ -142,7 +146,40 @@
       var companyForm = document.getElementById("company-form");
       var applicationStatus = document.getElementById("application-status");
       var submitApplicationButton = document.getElementById("submit-application");
+      var menuToggle = document.getElementById("mobile-menu-toggle");
+      var siteNavigation = document.getElementById("site-navigation");
       var vacancies = [];
+
+      function closeNavigation() {
+        siteNavigation.classList.remove("is-open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Abrir menu de navegação");
+      }
+
+      menuToggle.addEventListener("click", function () {
+        var isOpen = menuToggle.getAttribute("aria-expanded") === "true";
+        siteNavigation.classList.toggle("is-open", !isOpen);
+        menuToggle.setAttribute("aria-expanded", String(!isOpen));
+        menuToggle.setAttribute("aria-label", isOpen ? "Abrir menu de navegação" : "Fechar menu de navegação");
+      });
+
+      siteNavigation.addEventListener("click", function (event) {
+        var link = event.target.closest("a");
+        if (!link) return;
+        closeNavigation();
+        if (link.id === "mobile-search-link") {
+          event.preventDefault();
+          searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+          searchInput.focus({ preventScroll: true });
+        }
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && menuToggle.getAttribute("aria-expanded") === "true") {
+          closeNavigation();
+          menuToggle.focus();
+        }
+      });
 
       function safeUrl(value) {
         try {
