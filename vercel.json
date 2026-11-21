@@ -28,6 +28,10 @@
       "destination": "/public/manifest.json"
     },
     {
+      "source": "/gestor-manifest.json",
+      "destination": "/public/gestor-manifest.json"
+    },
+    {
       "source": "/sw.js",
       "destination": "/public/sw.js"
     },

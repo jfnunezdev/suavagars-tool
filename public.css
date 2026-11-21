@@ -63,7 +63,7 @@ body {
 .brand-logo {
   width: auto;
   max-width: 280px;
-  height: 62px;
+  height: 72px;
   object-fit: contain;
 }
 .brand-name {
@@ -349,7 +349,7 @@ footer {
   }
   .site-sidebar a { padding: 10px; text-align: center; }
   .header-inner { min-height: 108px; }
-  .brand-logo { height: 56px; }
+  .brand-logo { height: 64px; }
   .hero { padding-top: 30px; }
   .search-box { grid-template-columns: 1fr; }
   .search-box button { width: 100%; }

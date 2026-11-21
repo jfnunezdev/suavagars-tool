@@ -64,7 +64,7 @@
       display: block;
       width: auto;
       max-width: min(100%, 320px);
-      height: 60px;
+      height: 70px;
       object-fit: contain;
     }
 

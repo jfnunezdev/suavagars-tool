@@ -907,7 +907,7 @@
 
         var button = document.getElementById("add-vaga-gestor");
         button.disabled = true;
-        gestorStatus.textContent = "Verificando se a vaga já está no Meu Gestor...";
+        gestorStatus.textContent = "Verificando se a vaga já está publicada...";
         try {
           var vacancy = {
             role: roleInput.value.trim(),
@@ -946,7 +946,7 @@
             }
           }
 
-          gestorStatus.textContent = "Adicionando vaga ao Meu Gestor...";
+          gestorStatus.textContent = "Publicando vaga no site...";
           var response = await fetch("/api/vagas", {
             method: "POST",
             credentials: "same-origin",
@@ -955,9 +955,9 @@
           });
           var result = await response.json();
           if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível salvar a vaga.");
-          gestorStatus.textContent = "✅ Vaga adicionada ao Meu Gestor!";
+          gestorStatus.textContent = "✅ Vaga publicada no site e registrada no gestor!";
         } catch (error) {
-          gestorStatus.textContent = error.message || "Não foi possível adicionar a vaga ao Meu Gestor.";
+          gestorStatus.textContent = error.message || "Não foi possível publicar a vaga.";
         } finally {
           button.disabled = false;
         }

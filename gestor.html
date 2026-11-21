@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#0b1c3d">
   <meta name="robots" content="noindex, nofollow">
   <title>GESTOR SUAVAGARS - Painel de Aprovação</title>
+  <link rel="manifest" href="/gestor-manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="stylesheet" href="styles.css">
   <style>
     .manager-page { width: min(100%, 900px); margin: 0 auto; }
@@ -20,6 +22,7 @@
     }
     .manager-brand h1 { margin: 0; color: #fff; font-size: clamp(28px, 6vw, 42px); letter-spacing: 1px; line-height: 1.12; }
     .manager-brand p { margin: 7px 0 0; color: #d7e3f7; font-size: 16px; font-weight: 700; }
+    .manager-brand img { width: 76px; height: 76px; object-fit: contain; }
     .manager-login h1 { margin: 0; color: var(--blue); }
     .manager-login .intro { margin: 8px 0 20px; }
     .manager-heading {
@@ -54,6 +57,7 @@
 </head>
 <body>
   <header class="manager-brand">
+    <img src="logo.png" alt="" aria-hidden="true">
     <h1>GESTOR SUAVAGARS</h1>
     <p>Painel de Aprovação de Vagas</p>
   </header>
@@ -340,6 +344,14 @@
         .catch(function (error) {
           showLogin(error.message);
         });
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function (error) {
+            console.error("Não foi possível preparar o painel como aplicativo.", error);
+          });
+        });
+      }
     }());
   </script>
 </body>
