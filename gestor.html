@@ -113,12 +113,19 @@
       var publishedList = document.getElementById("published-list");
       var publishedStatus = document.getElementById("published-status");
       var refreshTimer = null;
+      var isLoadingManagerData = false;
+      var reloadAfterCurrentLoad = false;
+      var trackedPendingIds = null;
+      var notificationAudioContext = null;
+      var titleBlinkTimer = null;
+      var originalPageTitle = document.title;
 
       function showLogin(message) {
         if (refreshTimer) {
           window.clearInterval(refreshTimer);
           refreshTimer = null;
         }
+        stopTitleBlink();
         loginPanel.hidden = false;
         managerPanel.hidden = true;
         if (message) loginStatus.textContent = message;
@@ -130,10 +137,91 @@
         loadManagerData();
         if (!refreshTimer) {
           refreshTimer = window.setInterval(function () {
-            if (!document.hidden) loadManagerData();
-          }, 30000);
+            loadManagerData(true);
+          }, 15000);
         }
       }
+
+      function unlockNotificationAudio() {
+        var AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) return;
+        try {
+          if (!notificationAudioContext) notificationAudioContext = new AudioContextConstructor();
+          if (notificationAudioContext.state === "suspended") {
+            notificationAudioContext.resume().catch(function (error) {
+              console.warn("Não foi possível habilitar o som de novas solicitações.", error);
+            });
+          }
+        } catch (error) {
+          console.warn("Não foi possível habilitar o som de novas solicitações.", error);
+        }
+      }
+
+      function scheduleChimeTone(frequency, startTime, duration) {
+        var oscillator = notificationAudioContext.createOscillator();
+        var volume = notificationAudioContext.createGain();
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(frequency, startTime);
+        volume.gain.setValueAtTime(0.0001, startTime);
+        volume.gain.exponentialRampToValueAtTime(0.9, startTime + 0.04);
+        volume.gain.setValueAtTime(0.9, startTime + duration - 0.12);
+        volume.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+        oscillator.connect(volume);
+        volume.connect(notificationAudioContext.destination);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration + 0.02);
+      }
+
+      function playNotificationSound() {
+        if (!notificationAudioContext) {
+          console.warn("Interaja com o painel uma vez para habilitar o som de notificações.");
+          return;
+        }
+        var playChime = function () {
+          for (var repetition = 0; repetition < 3; repetition += 1) {
+            var startTime = notificationAudioContext.currentTime + 0.08 + repetition * 2.15;
+            scheduleChimeTone(880, startTime, 0.82);
+            scheduleChimeTone(659.25, startTime + 0.95, 0.82);
+          }
+        };
+        if (notificationAudioContext.state === "suspended") {
+          notificationAudioContext.resume().then(playChime).catch(function (error) {
+            console.warn("Não foi possível tocar o som de novas solicitações.", error);
+          });
+          return;
+        }
+        playChime();
+      }
+
+      function startTitleBlink() {
+        if (titleBlinkTimer) return;
+        var showAlertTitle = true;
+        document.title = "(1) NOVA VAGA!";
+        titleBlinkTimer = window.setInterval(function () {
+          document.title = showAlertTitle ? "(1) NOVA VAGA!" : originalPageTitle;
+          showAlertTitle = !showAlertTitle;
+        }, 600);
+      }
+
+      function stopTitleBlink() {
+        if (titleBlinkTimer) {
+          window.clearInterval(titleBlinkTimer);
+          titleBlinkTimer = null;
+        }
+        document.title = originalPageTitle;
+      }
+
+      function notifyNewApplications() {
+        startTitleBlink();
+        playNotificationSound();
+      }
+
+      document.addEventListener("pointerdown", unlockNotificationAudio, { once: true });
+      document.addEventListener("keydown", unlockNotificationAudio, { once: true });
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) stopTitleBlink();
+      });
+      window.addEventListener("focus", stopTitleBlink);
 
       function addDetail(list, label, value) {
         var row = document.createElement("div");
@@ -240,9 +328,16 @@
         });
       }
 
-      async function loadManagerData() {
-        pendingStatus.textContent = "Carregando solicitações...";
-        publishedStatus.textContent = "Carregando vagas...";
+      async function loadManagerData(silent) {
+        if (isLoadingManagerData) {
+          if (!silent) reloadAfterCurrentLoad = true;
+          return;
+        }
+        isLoadingManagerData = true;
+        if (!silent) {
+          pendingStatus.textContent = "Carregando solicitações...";
+          publishedStatus.textContent = "Carregando vagas...";
+        }
         try {
           var responses = await Promise.all([
             fetch("/api/candidaturas", { cache: "no-store", headers: { "Accept": "application/json" } }),
@@ -261,11 +356,26 @@
           if (!Array.isArray(results[0].solicitacoes) || !Array.isArray(results[1].vagas)) {
             throw new Error("Os dados recebidos do painel estão inválidos.");
           }
-          renderPending(results[0].solicitacoes);
+          var applications = results[0].solicitacoes;
+          var currentPendingIds = new Set(applications.map(function (application) { return application.id; }));
+          var pendingListChanged = trackedPendingIds === null ||
+            currentPendingIds.size !== trackedPendingIds.size ||
+            Array.from(currentPendingIds).some(function (id) { return !trackedPendingIds.has(id); });
+          var hasNewApplications = trackedPendingIds !== null &&
+            Array.from(currentPendingIds).some(function (id) { return !trackedPendingIds.has(id); });
+          trackedPendingIds = currentPendingIds;
+          if (pendingListChanged) renderPending(applications);
           renderPublished(results[1].vagas);
+          if (hasNewApplications) notifyNewApplications();
         } catch (error) {
           pendingStatus.textContent = error.message || "Não foi possível carregar as solicitações.";
           publishedStatus.textContent = "Atualize a página para tentar novamente.";
+        } finally {
+          isLoadingManagerData = false;
+          if (reloadAfterCurrentLoad) {
+            reloadAfterCurrentLoad = false;
+            loadManagerData(true);
+          }
         }
       }
 
