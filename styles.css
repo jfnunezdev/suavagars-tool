@@ -27,6 +27,31 @@
       margin: 0 auto;
     }
 
+    .app-nav {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 0 16px;
+    }
+
+    .app-nav a {
+      display: flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 8px;
+      border: 1px solid #a9cce6;
+      border-radius: 11px;
+      background: #f3faff;
+      color: var(--blue);
+      font-size: .9rem;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .app-nav a:hover { background: #e6f4ff; }
+
     header {
       display: grid;
       justify-items: center;
