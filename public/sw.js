@@ -1,14 +1,11 @@
 "use strict";
 
-const CACHE_NAME = "sua-vaga-rs-pwa-v1";
+const CACHE_NAME = "sua-vaga-rs-pwa-v2";
 const APP_SHELL = [
   "/",
   "/index.html",
-  "/ferramenta.html",
-  "/styles.css",
-  "/app.js",
+  "/public.css",
   "/logo.png",
-  "/vagas.html",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png"

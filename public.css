@@ -203,14 +203,6 @@ footer {
   font-size: 12px;
   line-height: 1.45;
 }
-.team-button {
-  display: inline-block;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .sr-only {
   position: absolute;
   width: 1px;

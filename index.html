@@ -44,7 +44,6 @@
 
   <footer>
     <p class="disclaimer">Sua Vaga RS apenas divulga vagas. A contratação é responsabilidade exclusiva da empresa anunciante.</p>
-    <a class="team-button" href="ferramenta.html">Área da Equipe</a>
   </footer>
 
   <script>
@@ -149,6 +148,14 @@
           vacancies = [];
           jobsStatus.textContent = "Nenhuma vaga publicada no momento. Volte amanhã, novas vagas todos os dias.";
         });
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function (error) {
+            console.error("Não foi possível atualizar o cache do site.", error);
+          });
+        });
+      }
     }());
   </script>
 </body>
