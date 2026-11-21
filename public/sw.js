@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "sua-vaga-rs-pwa-v2";
+const CACHE_NAME = "sua-vaga-rs-pwa-v3";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -33,7 +33,8 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   const requestUrl = new URL(request.url);
   if (request.method !== "GET" || requestUrl.origin !== self.location.origin ||
-      requestUrl.pathname.startsWith("/api/")) return;
+      requestUrl.pathname.startsWith("/api/") ||
+      ["/ferramenta", "/ferramenta.html", "/gestor", "/gestor.html"].includes(requestUrl.pathname)) return;
 
   event.respondWith((async () => {
     try {
