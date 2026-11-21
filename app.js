@@ -994,7 +994,7 @@
       });
 
       document.getElementById("visit-instagram").addEventListener("click", function () {
-        window.open("https://instagram.com/suavagars", "_blank", "noopener,noreferrer");
+        window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
       });
 
       function roundedRect(ctx, x, y, width, height, radius) {
