@@ -3,6 +3,7 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { randomUUID } = require("node:crypto");
+const { isAdminRequest, sendUnauthorized } = require("../lib/admin-auth");
 
 const MAX_BODY_BYTES = 16 * 1024;
 const MAX_VACANCIES = 100;
@@ -215,6 +216,21 @@ async function deleteLocalVacancy(id) {
   return true;
 }
 
+async function publishApplication(application) {
+  const storage = assertStorageAvailable();
+  const vacancy = validateVacancy(application);
+  vacancy.applicationId = boundedText(application.id, "solicitação", 128, "");
+  if (!vacancy.applicationId) throw new ApiError(400, "A solicitação não tem um identificador válido.");
+
+  const existing = storage === "kv" ? await readKvVacancies() : await readLocalVacancies();
+  const alreadyPublished = existing.find((item) => item.applicationId === vacancy.applicationId);
+  if (alreadyPublished) return alreadyPublished;
+
+  if (storage === "kv") await writeKvVacancy(vacancy);
+  else await writeLocalVacancy(vacancy);
+  return vacancy;
+}
+
 async function handler(request, response) {
   let storage;
   try {
@@ -233,6 +249,16 @@ async function handler(request, response) {
     return;
   }
 
+  if (request.method !== "DELETE" && request.method !== "POST") {
+    response.setHeader("Allow", "GET, POST, DELETE");
+    sendJson(response, 405, { error: "Este endpoint aceita somente GET, POST e DELETE." });
+    return;
+  }
+  if (!isAdminRequest(request)) {
+    sendUnauthorized(response);
+    return;
+  }
+
   if (request.method === "DELETE") {
     try {
       const body = await readJsonBody(request);
@@ -244,12 +270,6 @@ async function handler(request, response) {
     } catch (error) {
       sendJson(response, error.statusCode || 500, { error: error.message || "Não foi possível apagar a vaga." });
     }
-    return;
-  }
-
-  if (request.method !== "POST") {
-    response.setHeader("Allow", "GET, POST, DELETE");
-    sendJson(response, 405, { error: "Este endpoint aceita somente GET, POST e DELETE." });
     return;
   }
 
@@ -265,3 +285,4 @@ async function handler(request, response) {
 
 module.exports = handler;
 module.exports.validateVacancy = validateVacancy;
+module.exports.publishApplication = publishApplication;

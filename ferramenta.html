@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name=
   "viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#16a34a">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,18 +14,36 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <title>Sua Vaga RS - Gerador de Posts</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .private-login { width: min(100% - 32px, 440px); margin: 9vh auto 0; }
+    .private-login h1 { margin: 0; }
+  </style>
 </head>
 <body>
-  <main>
+  <section id="editor-login" class="card private-login" aria-labelledby="editor-login-title">
+    <img src="logo.png" alt="Sua Vaga RS" width="220">
+    <h1 id="editor-login-title">Acesso privado da equipe</h1>
+    <p class="intro">Entre para abrir o editor de posts.</p>
+    <form id="editor-login-form">
+      <div class="field">
+        <label for="editor-password">Senha do painel</label>
+        <input id="editor-password" type="password" autocomplete="current-password" required>
+      </div>
+      <button id="editor-login-button" type="submit">ENTRAR</button>
+    </form>
+    <p id="editor-login-status" class="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <main id="editor-content" hidden>
     <nav class="app-nav" aria-label="Navegação principal">
       <a href="ferramenta.html" aria-current="page">EDITOR DE POST</a>
-      <a href="vagas.html">MEU GESTOR</a>
+      <a href="gestor.html">MEU GESTOR</a>
     </nav>
     <header>
       <img src="logo.png" alt="Sua Vaga RS">
       <h1>Sua Vaga RS - Gerador de Posts</h1>
       <p class="intro">Transforme o link da vaga em um post pronto para compartilhar.</p>
-      <a class="gestor-follow" href="vagas.html">📋 IR PARA MEU GESTOR</a>
+      <a class="gestor-follow" href="gestor.html">📋 IR PARA MEU GESTOR</a>
     </header>
 
     <section class="card" aria-labelledby="text-heading">
@@ -97,7 +116,7 @@
       <div class="button-row">
         <button id="add-vaga-gestor" class="whatsapp" type="button">➕ ADICIONAR ESSA VAGA AO GESTOR</button>
       </div>
-      <a class="gestor-follow" href="vagas.html" target="_blank" rel="noopener noreferrer">👀 VER GESTOR</a>
+      <a class="gestor-follow" href="gestor.html" target="_blank" rel="noopener noreferrer">👀 VER GESTOR</a>
       <p id="gestor-status" class="status" role="status" aria-live="polite"></p>
       <p id="post-status" class="status" role="status" aria-live="polite"></p>
       <dialog id="duplicate-warning" class="duplicate-warning" aria-labelledby="duplicate-warning-title" aria-describedby="duplicate-warning-message">
@@ -158,5 +177,59 @@
   <canvas id="post-canvas" width="1080" height="1080" hidden></canvas>
 
   <script src="app.js" defer></script>
+  <script>
+    (function () {
+      "use strict";
+      var loginForm = document.getElementById("editor-login-form");
+      var loginStatus = document.getElementById("editor-login-status");
+      var loginButton = document.getElementById("editor-login-button");
+      var editorLogin = document.getElementById("editor-login");
+      var editorContent = document.getElementById("editor-content");
+
+      function showEditor() {
+        editorLogin.hidden = true;
+        editorContent.hidden = false;
+        document.body.classList.add("editor-authenticated");
+      }
+
+      loginForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        loginButton.disabled = true;
+        loginStatus.textContent = "Validando acesso...";
+        try {
+          var response = await fetch("/api/gestor-auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({ password: document.getElementById("editor-password").value })
+          });
+          var result = await response.json();
+          if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível entrar.");
+          loginForm.reset();
+          showEditor();
+        } catch (error) {
+          loginStatus.textContent = error.message || "Não foi possível entrar.";
+        } finally {
+          loginButton.disabled = false;
+        }
+      });
+
+      fetch("/api/gestor-auth", { cache: "no-store", headers: { "Accept": "application/json" } })
+        .then(function (response) {
+          if (!response.ok) throw new Error("Não foi possível verificar o acesso.");
+          return response.json();
+        })
+        .then(function (result) {
+          if (result.authenticated) showEditor();
+          else {
+            editorLogin.hidden = false;
+            loginStatus.textContent = "";
+          }
+        })
+        .catch(function (error) {
+          editorLogin.hidden = false;
+          loginStatus.textContent = error.message;
+        });
+    }());
+  </script>
 </body>
 </html>

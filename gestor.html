@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0877d1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Painel privado - Sua Vaga RS</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .manager-page { width: min(100%, 900px); margin: 0 auto; }
+    .manager-login { max-width: 440px; margin: 9vh auto 0; }
+    .manager-login h1, .manager-heading h1 { margin: 0; color: var(--blue); }
+    .manager-login .intro { margin: 8px 0 20px; }
+    .manager-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 12px 0 22px;
+    }
+    .manager-heading .secondary { width: auto; min-width: 120px; }
+    .manager-heading-actions { display: flex; gap: 8px; }
+    .manager-editor-link { display: inline-flex; min-height: 50px; align-items: center; justify-content: center; padding: 10px 14px; border: 1px solid #a9cce6; border-radius: 11px; color: var(--blue); font-weight: 700; text-decoration: none; }
+    .manager-section { margin: 24px 0; }
+    .manager-section h2 { margin-bottom: 10px; }
+    .manager-list { display: grid; gap: 14px; }
+    .manager-card { margin: 0; }
+    .manager-card h3 { margin: 0 0 12px; color: var(--blue); font-size: 1.2rem; }
+    .manager-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+    .manager-details div { min-width: 0; padding: 10px; border-radius: 9px; background: #f3faff; }
+    .manager-details dt { color: var(--muted); font-size: .82rem; font-weight: 700; }
+    .manager-details dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+    .manager-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .manager-card-actions .reject-button { background: #b3261e; }
+    .manager-card-actions .reject-button:hover { background: #8d1d17; }
+    .manager-status { min-height: 24px; margin: 8px 0; color: var(--muted); }
+    .manager-count { display: inline-flex; min-width: 26px; height: 26px; align-items: center; justify-content: center; margin-left: 6px; border-radius: 999px; background: #f0ad24; color: #382300; font-size: .85rem; }
+    @media (max-width: 520px) {
+      .manager-heading { align-items: flex-start; flex-direction: column; }
+      .manager-heading .secondary { width: 100%; }
+      .manager-heading-actions { width: 100%; flex-direction: column; }
+      .manager-editor-link { width: 100%; }
+      .manager-details { grid-template-columns: 1fr; }
+      .manager-card-actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="manager-page">
+    <section id="login-panel" class="card manager-login" aria-labelledby="login-title" hidden>
+      <img src="logo.png" alt="Sua Vaga RS" width="220">
+      <h1 id="login-title">Painel do gestor</h1>
+      <p class="intro">Acesso privado da equipe Sua Vaga RS.</p>
+      <form id="login-form">
+        <div class="field">
+          <label for="manager-password">Senha do painel</label>
+          <input id="manager-password" type="password" autocomplete="current-password" required>
+        </div>
+        <button id="login-button" type="submit">ENTRAR</button>
+      </form>
+      <p id="login-status" class="manager-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="manager-panel" hidden>
+      <header class="manager-heading">
+        <div>
+          <h1>Painel do gestor</h1>
+          <p class="intro">Revise as solicitações antes de publicar.</p>
+        </div>
+        <div class="manager-heading-actions">
+          <a class="secondary manager-editor-link" href="ferramenta.html">EDITOR DE POSTS</a>
+          <button id="logout-button" class="secondary" type="button">SAIR</button>
+        </div>
+      </header>
+
+      <section class="manager-section" aria-labelledby="pending-title">
+        <h2 id="pending-title">Vagas aguardando revisão <span id="pending-count" class="manager-count">0</span></h2>
+        <p id="pending-status" class="manager-status" role="status" aria-live="polite"></p>
+        <div id="pending-list" class="manager-list"></div>
+      </section>
+
+      <section class="manager-section" aria-labelledby="published-title">
+        <h2 id="published-title">Vagas publicadas</h2>
+        <p id="published-status" class="manager-status" role="status" aria-live="polite"></p>
+        <div id="published-list" class="manager-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+      var loginPanel = document.getElementById("login-panel");
+      var managerPanel = document.getElementById("manager-panel");
+      var loginForm = document.getElementById("login-form");
+      var loginStatus = document.getElementById("login-status");
+      var loginButton = document.getElementById("login-button");
+      var logoutButton = document.getElementById("logout-button");
+      var pendingList = document.getElementById("pending-list");
+      var pendingStatus = document.getElementById("pending-status");
+      var pendingCount = document.getElementById("pending-count");
+      var publishedList = document.getElementById("published-list");
+      var publishedStatus = document.getElementById("published-status");
+      var refreshTimer = null;
+
+      function showLogin(message) {
+        if (refreshTimer) {
+          window.clearInterval(refreshTimer);
+          refreshTimer = null;
+        }
+        loginPanel.hidden = false;
+        managerPanel.hidden = true;
+        if (message) loginStatus.textContent = message;
+      }
+
+      function showManager() {
+        loginPanel.hidden = true;
+        managerPanel.hidden = false;
+        loadManagerData();
+        if (!refreshTimer) {
+          refreshTimer = window.setInterval(function () {
+            if (!document.hidden) loadManagerData();
+          }, 30000);
+        }
+      }
+
+      function addDetail(list, label, value) {
+        var row = document.createElement("div");
+        var term = document.createElement("dt");
+        term.textContent = label;
+        var description = document.createElement("dd");
+        description.textContent = value || "A consultar";
+        row.appendChild(term);
+        row.appendChild(description);
+        list.appendChild(row);
+      }
+
+      function addActionButton(container, label, className, handler) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        if (className) button.className = className;
+        button.addEventListener("click", handler);
+        container.appendChild(button);
+        return button;
+      }
+
+      function renderPending(applications) {
+        pendingList.replaceChildren();
+        pendingCount.textContent = String(applications.length);
+        if (!applications.length) {
+          pendingStatus.textContent = "Não há vagas aguardando revisão.";
+          return;
+        }
+        pendingStatus.textContent = "Revise os dados e autorize apenas as vagas que devem aparecer no site.";
+        applications.forEach(function (application) {
+          var card = document.createElement("article");
+          card.className = "card manager-card";
+          var title = document.createElement("h3");
+          title.textContent = application.role || "Cargo a consultar";
+          card.appendChild(title);
+
+          var details = document.createElement("dl");
+          details.className = "manager-details";
+          [
+            ["Empresa", application.company],
+            ["Cidade", application.city],
+            ["Salário", application.salary],
+            ["Modelo", application.model],
+            ["Tipo", application.contractType],
+            ["Horário", application.schedule],
+            ["Contato", application.contactName],
+            ["WhatsApp", application.contactPhone],
+            ["E-mail", application.contactEmail],
+            ["Link de candidatura", application.link],
+            ["Atividades", application.activities],
+            ["Benefícios", application.benefits],
+            ["Requisitos", application.requirements]
+          ].forEach(function (detail) {
+            if (detail[1]) addDetail(details, detail[0], detail[1]);
+          });
+          card.appendChild(details);
+
+          var actions = document.createElement("div");
+          actions.className = "manager-card-actions";
+          addActionButton(actions, "AUTORIZAR / PUBLICAR VAGA", "", function (event) {
+            processApplication(application.id, "approve", event.currentTarget);
+          });
+          addActionButton(actions, "RECUSAR SOLICITAÇÃO", "reject-button", function (event) {
+            if (window.confirm("Recusar e remover a solicitação de " + (application.role || "vaga") + "?")) {
+              processApplication(application.id, "reject", event.currentTarget);
+            }
+          });
+          card.appendChild(actions);
+          pendingList.appendChild(card);
+        });
+      }
+
+      function renderPublished(vacancies) {
+        publishedList.replaceChildren();
+        if (!vacancies.length) {
+          publishedStatus.textContent = "Não há vagas publicadas.";
+          return;
+        }
+        publishedStatus.textContent = "Estas vagas aparecem na página pública.";
+        vacancies.forEach(function (vacancy) {
+          var card = document.createElement("article");
+          card.className = "card manager-card";
+          var title = document.createElement("h3");
+          title.textContent = vacancy.role || "Cargo a consultar";
+          card.appendChild(title);
+          var details = document.createElement("dl");
+          details.className = "manager-details";
+          [
+            ["Empresa", vacancy.company],
+            ["Cidade", vacancy.city],
+            ["Salário", vacancy.salary],
+            ["Tipo", vacancy.contractType]
+          ].forEach(function (detail) {
+            addDetail(details, detail[0], detail[1]);
+          });
+          card.appendChild(details);
+          addActionButton(card, "EXCLUIR VAGA PUBLICADA", "reject-button", function (event) {
+            if (window.confirm("Excluir a vaga de " + (vacancy.role || "cargo") + " do site?")) {
+              deleteVacancy(vacancy.id, event.currentTarget);
+            }
+          });
+          publishedList.appendChild(card);
+        });
+      }
+
+      async function loadManagerData() {
+        pendingStatus.textContent = "Carregando solicitações...";
+        publishedStatus.textContent = "Carregando vagas...";
+        try {
+          var responses = await Promise.all([
+            fetch("/api/candidaturas", { cache: "no-store", headers: { "Accept": "application/json" } }),
+            fetch("/api/vagas", { cache: "no-store", headers: { "Accept": "application/json" } })
+          ]);
+          if (responses.some(function (response) { return response.status === 401; })) {
+            showLogin("Sua sessão expirou. Entre novamente.");
+            return;
+          }
+          var results = await Promise.all(responses.map(function (response) {
+            return response.json().then(function (data) {
+              if (!response.ok) throw new Error(data && data.error ? data.error : "Não foi possível carregar o painel.");
+              return data;
+            });
+          }));
+          if (!Array.isArray(results[0].solicitacoes) || !Array.isArray(results[1].vagas)) {
+            throw new Error("Os dados recebidos do painel estão inválidos.");
+          }
+          renderPending(results[0].solicitacoes);
+          renderPublished(results[1].vagas);
+        } catch (error) {
+          pendingStatus.textContent = error.message || "Não foi possível carregar as solicitações.";
+          publishedStatus.textContent = "Atualize a página para tentar novamente.";
+        }
+      }
+
+      async function processApplication(id, action, button) {
+        button.disabled = true;
+        pendingStatus.textContent = action === "approve" ? "Publicando vaga..." : "Recusando solicitação...";
+        try {
+          var response = await fetch("/api/candidaturas", {
+            method: action === "approve" ? "PATCH" : "DELETE",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({ id: id })
+          });
+          var result = await response.json();
+          if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível processar a solicitação.");
+          await loadManagerData();
+        } catch (error) {
+          pendingStatus.textContent = error.message || "Não foi possível processar a solicitação.";
+          button.disabled = false;
+        }
+      }
+
+      async function deleteVacancy(id, button) {
+        button.disabled = true;
+        publishedStatus.textContent = "Excluindo vaga...";
+        try {
+          var response = await fetch("/api/vagas", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({ id: id })
+          });
+          var result = await response.json();
+          if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível excluir a vaga.");
+          await loadManagerData();
+        } catch (error) {
+          publishedStatus.textContent = error.message || "Não foi possível excluir a vaga.";
+          button.disabled = false;
+        }
+      }
+
+      loginForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        loginButton.disabled = true;
+        loginStatus.textContent = "Validando acesso...";
+        try {
+          var response = await fetch("/api/gestor-auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({ password: document.getElementById("manager-password").value })
+          });
+          var result = await response.json();
+          if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível entrar.");
+          loginForm.reset();
+          loginStatus.textContent = "";
+          showManager();
+        } catch (error) {
+          loginStatus.textContent = error.message || "Não foi possível entrar.";
+        } finally {
+          loginButton.disabled = false;
+        }
+      });
+
+      logoutButton.addEventListener("click", async function () {
+        await fetch("/api/gestor-auth", { method: "DELETE", cache: "no-store" });
+        showLogin("Você saiu do painel.");
+      });
+
+      fetch("/api/gestor-auth", { cache: "no-store", headers: { "Accept": "application/json" } })
+        .then(function (response) {
+          if (!response.ok) throw new Error("Não foi possível verificar o acesso.");
+          return response.json();
+        })
+        .then(function (data) {
+          if (data.authenticated) showManager();
+          else showLogin();
+        })
+        .catch(function (error) {
+          showLogin(error.message);
+        });
+    }());
+  </script>
+</body>
+</html>

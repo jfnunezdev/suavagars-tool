@@ -5,6 +5,8 @@ const http = require("node:http");
 const path = require("node:path");
 const vagaHandler = require("./api/vaga");
 const vagasHandler = require("./api/vagas");
+const candidaturasHandler = require("./api/candidaturas");
+const gestorAuthHandler = require("./api/gestor-auth");
 
 const root = __dirname;
 const mimeTypes = {
@@ -28,6 +30,14 @@ const server = http.createServer((request, response) => {
   }
   if (requestUrl.pathname === "/api/vagas") {
     vagasHandler(request, response);
+    return;
+  }
+  if (requestUrl.pathname === "/api/candidaturas") {
+    candidaturasHandler(request, response);
+    return;
+  }
+  if (requestUrl.pathname === "/api/gestor-auth") {
+    gestorAuthHandler(request, response);
     return;
   }
   if (request.method !== "GET" && request.method !== "HEAD") {

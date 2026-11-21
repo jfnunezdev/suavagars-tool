@@ -3,12 +3,7 @@
   "redirects": [
     {
       "source": "/ferramenta",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/ferramenta.html",
-      "destination": "/",
+      "destination": "/ferramenta.html",
       "permanent": false
     },
     {
@@ -19,6 +14,11 @@
     {
       "source": "/vagas.html",
       "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/gestor",
+      "destination": "/gestor.html",
       "permanent": false
     }
   ],

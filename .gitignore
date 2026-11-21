@@ -1,2 +1,4 @@
 /data/vagas.json
 /data/vagas.json.*.tmp
+/data/solicitacoes.json
+/data/solicitacoes.json.*.tmp
