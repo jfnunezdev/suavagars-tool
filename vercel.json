@@ -32,6 +32,10 @@
       "destination": "/public/gestor-manifest.json"
     },
     {
+      "source": "/ferramenta-manifest.json",
+      "destination": "/public/ferramenta-manifest.json"
+    },
+    {
       "source": "/sw.js",
       "destination": "/public/sw.js"
     },

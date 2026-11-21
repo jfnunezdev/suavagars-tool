@@ -19,6 +19,7 @@ const mimeTypes = {
 const publicAssets = new Map([
   ["/manifest.json", path.join("public", "manifest.json")],
   ["/gestor-manifest.json", path.join("public", "gestor-manifest.json")],
+  ["/ferramenta-manifest.json", path.join("public", "ferramenta-manifest.json")],
   ["/sw.js", path.join("public", "sw.js")],
   ["/icon-192.png", path.join("public", "icon-192.png")],
   ["/icon-512.png", path.join("public", "icon-512.png")]

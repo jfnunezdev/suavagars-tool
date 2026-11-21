@@ -1,12 +1,13 @@
 {
+  "id": "/?pwa=publica",
   "name": "SUAVAGARS",
   "short_name": "SUAVAGARS",
   "description": "Vagas de emprego em Caxias do Sul.",
-  "start_url": "/",
+  "start_url": "/?pwa=publica",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#16a34a",
+  "theme_color": "#0877d1",
   "icons": [
     {
       "src": "/icon-192.png",
