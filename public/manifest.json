@@ -1,7 +1,7 @@
 {
-  "name": "Sua Vaga RS",
-  "short_name": "Sua Vaga RS",
-  "description": "Gestor de vagas Sua Vaga RS",
+  "name": "SUAVAGARS",
+  "short_name": "SUAVAGARS",
+  "description": "Vagas de emprego em Caxias do Sul.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

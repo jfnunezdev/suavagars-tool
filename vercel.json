@@ -39,5 +39,16 @@
       "source": "/icon-512.png",
       "destination": "/public/icon-512.png"
     }
+  ],
+  "headers": [
+    {
+      "source": "/gestor.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    }
   ]
 }

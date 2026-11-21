@@ -66,6 +66,13 @@ body {
   height: 62px;
   object-fit: contain;
 }
+.brand-name {
+  margin: 1px 0 0;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  line-height: 1.1;
+}
 .location { margin: 4px 0 0; font-size: 15px; font-weight: 700; }
 
 .hero {

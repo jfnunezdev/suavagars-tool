@@ -3,14 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0877d1">
+  <meta name="theme-color" content="#0b1c3d">
   <meta name="robots" content="noindex, nofollow">
-  <title>Painel privado - Sua Vaga RS</title>
+  <title>GESTOR SUAVAGARS - Painel de Aprovação</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     .manager-page { width: min(100%, 900px); margin: 0 auto; }
     .manager-login { max-width: 440px; margin: 9vh auto 0; }
-    .manager-login h1, .manager-heading h1 { margin: 0; color: var(--blue); }
+    .manager-brand {
+      margin: -24px -16px 24px;
+      padding: 26px 18px 24px;
+      background: #0b1c3d;
+      color: #fff;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(8, 24, 55, .2);
+    }
+    .manager-brand h1 { margin: 0; color: #fff; font-size: clamp(28px, 6vw, 42px); letter-spacing: 1px; line-height: 1.12; }
+    .manager-brand p { margin: 7px 0 0; color: #d7e3f7; font-size: 16px; font-weight: 700; }
+    .manager-login h1 { margin: 0; color: var(--blue); }
     .manager-login .intro { margin: 8px 0 20px; }
     .manager-heading {
       display: flex;
@@ -20,8 +30,6 @@
       margin: 12px 0 22px;
     }
     .manager-heading .secondary { width: auto; min-width: 120px; }
-    .manager-heading-actions { display: flex; gap: 8px; }
-    .manager-editor-link { display: inline-flex; min-height: 50px; align-items: center; justify-content: center; padding: 10px 14px; border: 1px solid #a9cce6; border-radius: 11px; color: var(--blue); font-weight: 700; text-decoration: none; }
     .manager-section { margin: 24px 0; }
     .manager-section h2 { margin-bottom: 10px; }
     .manager-list { display: grid; gap: 14px; }
@@ -39,19 +47,21 @@
     @media (max-width: 520px) {
       .manager-heading { align-items: flex-start; flex-direction: column; }
       .manager-heading .secondary { width: 100%; }
-      .manager-heading-actions { width: 100%; flex-direction: column; }
-      .manager-editor-link { width: 100%; }
       .manager-details { grid-template-columns: 1fr; }
       .manager-card-actions { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
+  <header class="manager-brand">
+    <h1>GESTOR SUAVAGARS</h1>
+    <p>Painel de Aprovação de Vagas</p>
+  </header>
+
   <main class="manager-page">
     <section id="login-panel" class="card manager-login" aria-labelledby="login-title" hidden>
-      <img src="logo.png" alt="Sua Vaga RS" width="220">
-      <h1 id="login-title">Painel do gestor</h1>
-      <p class="intro">Acesso privado da equipe Sua Vaga RS.</p>
+      <h1 id="login-title">Entrar no painel</h1>
+      <p class="intro">Área privada do GESTOR SUAVAGARS.</p>
       <form id="login-form">
         <div class="field">
           <label for="manager-password">Senha do painel</label>
@@ -65,23 +75,19 @@
     <section id="manager-panel" hidden>
       <header class="manager-heading">
         <div>
-          <h1>Painel do gestor</h1>
           <p class="intro">Revise as solicitações antes de publicar.</p>
         </div>
-        <div class="manager-heading-actions">
-          <a class="secondary manager-editor-link" href="ferramenta.html">EDITOR DE POSTS</a>
-          <button id="logout-button" class="secondary" type="button">SAIR</button>
-        </div>
+        <button id="logout-button" class="secondary" type="button">SAIR</button>
       </header>
 
       <section class="manager-section" aria-labelledby="pending-title">
-        <h2 id="pending-title">Vagas aguardando revisão <span id="pending-count" class="manager-count">0</span></h2>
+        <h2 id="pending-title">Solicitações Pendentes <span id="pending-count" class="manager-count">0</span></h2>
         <p id="pending-status" class="manager-status" role="status" aria-live="polite"></p>
         <div id="pending-list" class="manager-list"></div>
       </section>
 
       <section class="manager-section" aria-labelledby="published-title">
-        <h2 id="published-title">Vagas publicadas</h2>
+        <h2 id="published-title">Vagas Publicadas</h2>
         <p id="published-status" class="manager-status" role="status" aria-live="polite"></p>
         <div id="published-list" class="manager-list"></div>
       </section>
