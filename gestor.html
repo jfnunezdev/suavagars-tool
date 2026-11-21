@@ -117,6 +117,7 @@
       var reloadAfterCurrentLoad = false;
       var trackedPendingIds = null;
       var notificationAudioContext = null;
+      var notificationSoundQueued = false;
       var titleBlinkTimer = null;
       var reminderTimer = null;
       var pendingAlertActive = false;
@@ -145,15 +146,27 @@
         }
       }
 
-      function unlockNotificationAudio() {
+      function replayQueuedNotification(event) {
+        if (!notificationSoundQueued || !pendingAlertActive) return;
+        var target = event && event.target;
+        if (target && typeof target.closest === "function" && target.closest(".manager-card-actions")) return;
+        notificationSoundQueued = false;
+        playNotificationSound();
+      }
+
+      function unlockNotificationAudio(event) {
         var AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
         if (!AudioContextConstructor) return;
         try {
           if (!notificationAudioContext) notificationAudioContext = new AudioContextConstructor();
-          if (notificationAudioContext.state === "suspended") {
-            notificationAudioContext.resume().catch(function (error) {
-              console.warn("Não foi possível habilitar o som de novas solicitações.", error);
-            });
+          if (notificationAudioContext.state !== "running") {
+            notificationAudioContext.resume()
+              .then(function () { replayQueuedNotification(event); })
+              .catch(function (error) {
+                console.warn("Não foi possível habilitar o som de novas solicitações.", error);
+              });
+          } else {
+            replayQueuedNotification(event);
           }
         } catch (error) {
           console.warn("Não foi possível habilitar o som de novas solicitações.", error);
@@ -166,8 +179,8 @@
         oscillator.type = "sine";
         oscillator.frequency.setValueAtTime(frequency, startTime);
         volume.gain.setValueAtTime(0.0001, startTime);
-        volume.gain.exponentialRampToValueAtTime(0.28, startTime + 0.04);
-        volume.gain.setValueAtTime(0.28, startTime + duration - 0.08);
+        volume.gain.exponentialRampToValueAtTime(0.62, startTime + 0.04);
+        volume.gain.setValueAtTime(0.62, startTime + duration - 0.1);
         volume.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
         oscillator.connect(volume);
         volume.connect(notificationAudioContext.destination);
@@ -177,18 +190,20 @@
 
       function playNotificationSound() {
         if (!notificationAudioContext) {
+          notificationSoundQueued = true;
           console.warn("Interaja com o painel uma vez para habilitar o som de notificações.");
           return;
         }
         var playChime = function () {
           for (var repetition = 0; repetition < 3; repetition += 1) {
-            var startTime = notificationAudioContext.currentTime + 0.08 + repetition * 1.25;
-            scheduleChimeTone(784, startTime, 0.3);
-            scheduleChimeTone(659.25, startTime + 0.36, 0.34);
+            var startTime = notificationAudioContext.currentTime + 0.08 + repetition * 1.5;
+            scheduleChimeTone(784, startTime, 0.42);
+            scheduleChimeTone(659.25, startTime + 0.48, 0.46);
           }
         };
-        if (notificationAudioContext.state === "suspended") {
+        if (notificationAudioContext.state !== "running") {
           notificationAudioContext.resume().then(playChime).catch(function (error) {
+            notificationSoundQueued = true;
             console.warn("Não foi possível tocar o som de novas solicitações.", error);
           });
           return;
@@ -231,6 +246,7 @@
 
       function stopPendingReminder() {
         pendingAlertActive = false;
+        notificationSoundQueued = false;
         if (reminderTimer) {
           window.clearInterval(reminderTimer);
           reminderTimer = null;
@@ -238,8 +254,8 @@
         stopTitleBlink();
       }
 
-      document.addEventListener("pointerdown", unlockNotificationAudio, { once: true });
-      document.addEventListener("keydown", unlockNotificationAudio, { once: true });
+      document.addEventListener("pointerdown", unlockNotificationAudio);
+      document.addEventListener("keydown", unlockNotificationAudio);
       document.addEventListener("visibilitychange", function () {
         if (!document.hidden) stopTitleBlink();
       });
