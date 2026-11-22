@@ -90,12 +90,15 @@ body {
 .site-drawer::backdrop { background: rgba(15, 23, 42, .4); }
 .site-drawer[data-state="content"] {
   inset: 0;
-  width: min(820px, 94vw);
-  height: min(90dvh, 960px);
+  width: min(680px, calc(100vw - 32px));
+  height: auto;
+  max-height: min(90dvh, 900px);
   margin: auto;
   border-radius: 16px;
   box-shadow: 0 18px 55px rgba(8, 24, 55, .28);
 }
+.site-drawer[data-view="application"] { height: min(88dvh, 900px); }
+.site-drawer[data-view="application"] .drawer-header h2 { display: none; }
 .drawer-header {
   display: flex;
   min-height: 64px;
@@ -110,7 +113,6 @@ body {
   margin: 0;
   font-size: 19px;
 }
-.drawer-back,
 .drawer-close {
   display: inline-flex;
   width: 40px;
@@ -126,7 +128,6 @@ body {
   font-size: 24px;
   cursor: pointer;
 }
-.drawer-back[hidden] { display: none; }
 .drawer-content {
   min-height: 0;
   flex: 1;
@@ -134,11 +135,11 @@ body {
   overscroll-behavior: contain;
 }
 .drawer-content[hidden],
-#drawer-jobs-view[hidden],
+#drawer-search-view[hidden],
 #drawer-application-view[hidden],
 .drawer-search[hidden] { display: none; }
-.drawer-search { padding: 24px 20px 0; }
-#drawer-jobs-view .jobs-section { padding-top: 18px; }
+.drawer-search { padding: 24px 20px; }
+.site-drawer[data-view="search"] .drawer-content { flex: 0 0 auto; }
 .application-link { text-decoration: none; }
 
 .site-header {
@@ -553,14 +554,15 @@ footer {
   .site-drawer[data-state="menu"] .drawer-header { display: none; }
   .site-drawer[data-state="content"] {
     inset: 0;
-    width: 100%;
+    width: min(680px, calc(100vw - 24px));
     max-width: none;
-    height: 100dvh;
-    max-height: 100dvh;
-    margin: 0;
+    height: auto;
+    max-height: calc(100dvh - 24px);
+    margin: auto;
     border: 0;
-    border-radius: 0;
+    border-radius: 16px;
   }
+  .site-drawer[data-view="application"] { height: min(88dvh, 900px); }
   .site-drawer[data-state="content"]::backdrop { background: rgba(15, 23, 42, .4); }
   .site-header {
     position: fixed;

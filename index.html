@@ -27,12 +27,15 @@
         <p class="disclosure-badge">🔎 Apenas divulgamos vagas • Não contratamos</p>
         <h1 id="hero-title">Encontre sua próxima vaga.<br><span>Novas vagas todos os dias.</span></h1>
       </section>
+      <section class="jobs-section" aria-label="Vagas disponíveis">
+        <p id="jobs-status" class="jobs-status" role="status" aria-live="polite">Carregando vagas...</p>
+        <div id="jobs-list" class="jobs-list"></div>
+      </section>
     </div>
   </main>
 
   <dialog id="site-drawer" class="site-drawer" aria-labelledby="drawer-title">
     <div class="drawer-header">
-      <button id="drawer-back" class="drawer-back" type="button" aria-label="Voltar ao menu" hidden>←</button>
       <h2 id="drawer-title">Menu</h2>
       <button id="drawer-close" class="drawer-close" type="button" aria-label="Fechar menu">×</button>
     </div>
@@ -45,28 +48,15 @@
     </nav>
 
     <div id="drawer-content" class="drawer-content" hidden>
-      <section id="drawer-jobs-view" aria-label="Vagas disponíveis" hidden>
-        <form id="job-search" class="search-box drawer-search" role="search" hidden>
+      <section id="drawer-search-view" aria-label="Buscar vagas" hidden>
+        <form id="job-search" class="search-box drawer-search" role="search">
           <label for="search-input" class="sr-only">Buscar vaga por cargo</label>
           <input id="search-input" type="search" placeholder="Buscar por cargo" autocomplete="off">
           <button type="submit" aria-label="Buscar vagas">BUSCAR</button>
         </form>
-        <section class="jobs-section">
-          <p id="jobs-status" class="jobs-status" role="status" aria-live="polite">Carregando vagas...</p>
-          <div id="jobs-list" class="jobs-list"></div>
-        </section>
       </section>
 
       <section id="drawer-application-view" hidden>
-        <section id="empresas" class="company-section" aria-labelledby="company-title">
-          <div class="company-inner">
-            <p class="company-kicker">PARA EMPRESAS</p>
-            <h2 id="company-title">É EMPRESA? Tem uma vaga aberta?</h2>
-            <p>Publique sua vaga no SUAVAGARS e alcance milhares de candidatos em Caxias do Sul.</p>
-            <p class="application-link">Preencher dados da vaga para análise</p>
-          </div>
-        </section>
-
         <section id="application-form" class="application-section" aria-labelledby="application-title">
           <h2 id="application-title">Envie uma vaga para análise</h2>
           <p class="application-intro">Preencha os dados da oportunidade. A vaga só será publicada depois da revisão e autorização da equipe.</p>
@@ -166,23 +156,21 @@
       var siteNavigation = document.getElementById("site-navigation");
       var siteDrawer = document.getElementById("site-drawer");
       var drawerClose = document.getElementById("drawer-close");
-      var drawerBack = document.getElementById("drawer-back");
       var drawerTitle = document.getElementById("drawer-title");
       var drawerContent = document.getElementById("drawer-content");
-      var drawerJobsView = document.getElementById("drawer-jobs-view");
+      var drawerSearchView = document.getElementById("drawer-search-view");
       var drawerApplicationView = document.getElementById("drawer-application-view");
       var drawerScrollY = 0;
       var vacancies = [];
 
       function resetDrawer() {
         siteDrawer.dataset.state = "menu";
+        delete siteDrawer.dataset.view;
         drawerTitle.textContent = "Menu";
-        drawerBack.hidden = true;
         siteNavigation.hidden = false;
         drawerContent.hidden = true;
-        drawerJobsView.hidden = true;
+        drawerSearchView.hidden = true;
         drawerApplicationView.hidden = true;
-        searchForm.hidden = true;
       }
 
       function closeDrawer() {
@@ -207,28 +195,26 @@
         if (!trigger) return;
 
         var view = trigger.getAttribute("data-drawer-view");
+        if (view === "jobs") {
+          closeDrawer();
+          return;
+        }
+
         siteNavigation.hidden = true;
         drawerContent.hidden = false;
-        drawerBack.hidden = false;
         siteDrawer.dataset.state = "content";
+        siteDrawer.dataset.view = view;
         if (view === "application") {
-          drawerTitle.textContent = "Para empresas";
-          drawerJobsView.hidden = true;
+          drawerTitle.textContent = "Envie uma vaga para análise";
+          drawerSearchView.hidden = true;
           drawerApplicationView.hidden = false;
-          searchForm.hidden = true;
           drawerApplicationView.querySelector("input").focus({ preventScroll: true });
         } else {
-          drawerTitle.textContent = view === "search" ? "Buscar" : "Vagas abertas";
-          drawerJobsView.hidden = false;
+          drawerTitle.textContent = "Buscar";
+          drawerSearchView.hidden = false;
           drawerApplicationView.hidden = true;
-          searchForm.hidden = view !== "search";
-          if (view === "search") searchInput.focus({ preventScroll: true });
+          searchInput.focus({ preventScroll: true });
         }
-      });
-
-      drawerBack.addEventListener("click", function () {
-        resetDrawer();
-        siteNavigation.querySelector("button").focus({ preventScroll: true });
       });
 
       drawerClose.addEventListener("click", closeDrawer);
@@ -326,6 +312,7 @@
       searchForm.addEventListener("submit", function (event) {
         event.preventDefault();
         filterJobs();
+        closeDrawer();
       });
       searchInput.addEventListener("input", filterJobs);
 
