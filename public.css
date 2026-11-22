@@ -241,12 +241,12 @@ body {
 }
 .disclosure-badge {
   display: inline-block;
-  margin: -12px 0 14px;
-  padding: 4px 9px;
+  margin: -20px 0 4px;
+  padding: 3px 8px;
   border-radius: 999px;
   background: #F1F5F9;
   color: #334155;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   line-height: 1.35;
 }
