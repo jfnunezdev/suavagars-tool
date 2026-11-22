@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0877d1">
+  <meta name="description" content="Encontre vagas de emprego em Caxias do Sul no SuaVaga RS.">
+  <title>Vagas de emprego - SuaVaga RS</title>
+  <link rel="stylesheet" href="public.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" aria-label="SuaVaga RS - página inicial"><img src="logo.png" alt="" class="brand-logo"></a>
+      <p class="brand-name">SUAVAGARS</p>
+      <p class="location">Vagas de emprego em Caxias do Sul</p>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <section class="hero" aria-labelledby="jobs-title">
+      <h1 id="jobs-title">Vagas de emprego.<br><span>Novas oportunidades todos os dias.</span></h1>
+      <p class="disclosure-badge">🔎 Apenas divulgamos vagas • Não contratamos</p>
+      <form id="job-search" class="search-box" role="search">
+        <label for="search-input" class="sr-only">Buscar vaga por cargo</label>
+        <input id="search-input" type="search" placeholder="Buscar por cargo" autocomplete="off">
+        <button type="submit" aria-label="Buscar vagas">BUSCAR</button>
+      </form>
+    </section>
+
+    <section class="jobs-section" aria-label="Vagas disponíveis">
+      <p id="jobs-status" class="jobs-status" role="status" aria-live="polite">Carregando vagas...</p>
+      <div id="jobs-list" class="jobs-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p class="disclaimer">Aviso Legal: O SuaVaga RS é apenas um divulgador de vagas. Não somos a empresa contratante, não recebemos currículos e não participamos do processo seletivo. Todas as vagas são redirecionadas para sites externos de emprego. Verifique sempre as informações diretamente no site oficial da vaga antes de se candidatar.</p>
+    <a class="footer-link" href="termos.html">Termos de Uso</a>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+      var jobsList = document.getElementById("jobs-list");
+      var jobsStatus = document.getElementById("jobs-status");
+      var searchInput = document.getElementById("search-input");
+      var searchForm = document.getElementById("job-search");
+      var vacancies = [];
+
+      function safeUrl(value) {
+        try {
+          var url = new URL(value);
+          return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
+        } catch (error) {
+          return "";
+        }
+      }
+
+      function text(value, fallback) {
+        return String(value || "").trim() || fallback;
+      }
+
+      function render(items) {
+        while (jobsList.firstChild) jobsList.removeChild(jobsList.firstChild);
+        if (!items.length) {
+          jobsStatus.textContent = "Nenhuma vaga publicada no momento. Volte amanhã, novas vagas todos os dias.";
+          return;
+        }
+
+        jobsStatus.textContent = items.length + (items.length === 1 ? " vaga encontrada." : " vagas encontradas.");
+        items.forEach(function (vacancy) {
+          var card = document.createElement("article");
+          card.className = "job-card";
+          var role = document.createElement("h2");
+          role.textContent = text(vacancy.role, "Cargo a consultar");
+          card.appendChild(role);
+
+          var details = document.createElement("dl");
+          [
+            ["Empresa", vacancy.company],
+            ["Cidade", vacancy.city],
+            ["Salário", vacancy.salary],
+            ["Tipo", vacancy.contractType]
+          ].forEach(function (detail) {
+            var row = document.createElement("div");
+            var term = document.createElement("dt");
+            term.textContent = detail[0];
+            var description = document.createElement("dd");
+            description.textContent = text(detail[1], "A consultar");
+            row.appendChild(term);
+            row.appendChild(description);
+            details.appendChild(row);
+          });
+          card.appendChild(details);
+
+          var link = safeUrl(vacancy.link);
+          if (link) {
+            var apply = document.createElement("a");
+            apply.className = "apply-button";
+            apply.href = link;
+            apply.target = "_blank";
+            apply.rel = "noopener noreferrer";
+            apply.textContent = "QUERO ESSA VAGA";
+            card.appendChild(apply);
+
+            var externalNote = document.createElement("p");
+            externalNote.className = "job-external-note";
+            externalNote.textContent = "Você será redirecionado para um site externo. O SuaVaga RS não é responsável pela contratação.";
+            card.appendChild(externalNote);
+          }
+          jobsList.appendChild(card);
+        });
+      }
+
+      function filterJobs() {
+        var query = searchInput.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        if (!query) {
+          render(vacancies);
+          return;
+        }
+        var filtered = vacancies.filter(function (vacancy) {
+          var haystack = [vacancy.role, vacancy.company, vacancy.city, vacancy.contractType]
+            .join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          return haystack.indexOf(query) !== -1;
+        });
+        render(filtered);
+      }
+
+      searchForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        filterJobs();
+      });
+      searchInput.addEventListener("input", filterJobs);
+
+      fetch("/api/vagas", { cache: "no-store", headers: { "Accept": "application/json" } })
+        .then(function (response) {
+          if (!response.ok) throw new Error("API indisponível");
+          return response.json();
+        })
+        .then(function (data) {
+          vacancies = data && Array.isArray(data.vagas) ? data.vagas : [];
+          render(vacancies);
+        })
+        .catch(function () {
+          vacancies = [];
+          jobsStatus.textContent = "Nenhuma vaga publicada no momento. Volte amanhã, novas vagas todos os dias.";
+        });
+    }());
+  </script>
+</body>
+</html>

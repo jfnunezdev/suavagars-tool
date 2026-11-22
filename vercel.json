@@ -8,12 +8,7 @@
     },
     {
       "source": "/vagas",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/vagas.html",
-      "destination": "/",
+      "destination": "/vagas.html",
       "permanent": false
     },
     {

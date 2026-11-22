@@ -133,7 +133,8 @@
   </main>
 
   <footer>
-    <p class="disclaimer">SUAVAGARS apenas divulga vagas. A contratação é responsabilidade exclusiva da empresa anunciante.</p>
+    <p class="disclaimer">Aviso Legal: O SuaVaga RS é apenas um divulgador de vagas. Não somos a empresa contratante, não recebemos currículos e não participamos do processo seletivo. Todas as vagas são redirecionadas para sites externos de emprego. Verifique sempre as informações diretamente no site oficial da vaga antes de se candidatar.</p>
+    <a class="footer-link" href="termos.html">Termos de Uso</a>
   </footer>
 
   <script>
@@ -236,6 +237,10 @@
             apply.rel = "noopener noreferrer";
             apply.textContent = "QUERO ESSA VAGA";
             card.appendChild(apply);
+            var externalNote = document.createElement("p");
+            externalNote.className = "job-external-note";
+            externalNote.textContent = "Você será redirecionado para um site externo. O SuaVaga RS não é responsável pela contratação.";
+            card.appendChild(externalNote);
           }
           jobsList.appendChild(card);
         });
