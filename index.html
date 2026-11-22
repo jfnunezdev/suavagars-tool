@@ -22,116 +22,130 @@
   </header>
 
   <main class="public-layout">
-    <nav id="site-navigation" class="site-sidebar" aria-label="Navegação do site">
-      <a href="#vagas">Vagas abertas</a>
-      <a href="#empresas">Para empresas</a>
-      <a id="mobile-search-link" class="mobile-search-link" href="#search-input">Buscar</a>
-    </nav>
-
     <div class="page-content">
       <section id="vagas" class="hero" aria-labelledby="hero-title">
         <p class="disclosure-badge">🔎 Apenas divulgamos vagas • Não contratamos</p>
         <h1 id="hero-title">Encontre sua próxima vaga.<br><span>Novas vagas todos os dias.</span></h1>
-        <form id="job-search" class="search-box" role="search">
+      </section>
+    </div>
+  </main>
+
+  <dialog id="site-drawer" class="site-drawer" aria-labelledby="drawer-title">
+    <div class="drawer-header">
+      <button id="drawer-back" class="drawer-back" type="button" aria-label="Voltar ao menu" hidden>←</button>
+      <h2 id="drawer-title">Menu</h2>
+      <button id="drawer-close" class="drawer-close" type="button" aria-label="Fechar menu">×</button>
+    </div>
+
+    <nav id="site-navigation" class="site-sidebar" aria-label="Navegação do site">
+      <button type="button" data-drawer-view="application">Para empresas</button>
+      <button type="button" data-drawer-view="jobs">Vagas abertas</button>
+      <button type="button" data-drawer-view="search">Buscar</button>
+      <a href="https://wa.me/5554996077805?text=Hola%2C%20soy%20empresa%20y%20quiero%20publicar%20una%20vaga%20en%20Sua%20Vaga%20RS" target="_blank" rel="noopener noreferrer">Falar com atendente</a>
+    </nav>
+
+    <div id="drawer-content" class="drawer-content" hidden>
+      <section id="drawer-jobs-view" aria-label="Vagas disponíveis" hidden>
+        <form id="job-search" class="search-box drawer-search" role="search" hidden>
           <label for="search-input" class="sr-only">Buscar vaga por cargo</label>
           <input id="search-input" type="search" placeholder="Buscar por cargo" autocomplete="off">
           <button type="submit" aria-label="Buscar vagas">BUSCAR</button>
         </form>
+        <section class="jobs-section">
+          <p id="jobs-status" class="jobs-status" role="status" aria-live="polite">Carregando vagas...</p>
+          <div id="jobs-list" class="jobs-list"></div>
+        </section>
       </section>
 
-      <section class="jobs-section" aria-label="Vagas disponíveis">
-        <p id="jobs-status" class="jobs-status" role="status" aria-live="polite">Carregando vagas...</p>
-        <div id="jobs-list" class="jobs-list"></div>
-      </section>
-
-      <section id="empresas" class="company-section" aria-labelledby="company-title">
-        <div class="company-inner">
-          <p class="company-kicker">PARA EMPRESAS</p>
-          <h2 id="company-title">É EMPRESA? Tem uma vaga aberta?</h2>
-          <p>Publique sua vaga no SUAVAGARS e alcance milhares de candidatos em Caxias do Sul.</p>
-          <a class="publish-button" href="https://wa.me/5554996077805?text=Hola,%20soy%20empresa%20y%20quiero%20publicar%20una%20vaga%20en%20Sua%20Vaga%20RS" target="_blank" rel="noopener noreferrer">📢 PUBLICAR VAGA AGORA</a>
-          <a class="application-link" href="#application-form">Preencher dados da vaga para análise</a>
-        </div>
-      </section>
-
-      <section id="application-form" class="application-section" aria-labelledby="application-title">
-        <h2 id="application-title">Envie uma vaga para análise</h2>
-        <p class="application-intro">Preencha os dados da oportunidade. A vaga só será publicada depois da revisão e autorização da equipe.</p>
-        <form id="company-form" class="application-form">
-          <div class="form-grid">
-            <div class="field">
-              <label for="company-name">Empresa</label>
-              <input id="company-name" name="company" type="text" maxlength="160" autocomplete="organization" required>
-            </div>
-            <div class="field">
-              <label for="job-role">Cargo</label>
-              <input id="job-role" name="role" type="text" maxlength="160" required>
-            </div>
-            <div class="field">
-              <label for="job-city">Cidade</label>
-              <input id="job-city" name="city" type="text" maxlength="120" value="Caxias do Sul - RS" required>
-            </div>
-            <div class="field">
-              <label for="job-salary">Salário</label>
-              <input id="job-salary" name="salary" type="text" maxlength="120" placeholder="Ex.: R$ 2.500,00 ou a combinar">
-            </div>
-            <div class="field">
-              <label for="job-model">Modelo de trabalho</label>
-              <input id="job-model" name="model" type="text" maxlength="100" placeholder="Presencial, híbrido ou remoto">
-            </div>
-            <div class="field">
-              <label for="job-type">Tipo de contratação</label>
-              <select id="job-type" name="contractType" required>
-                <option value="">Selecione...</option>
-                <option>CLT (Efetivo)</option>
-                <option>Temporário</option>
-                <option>Estágio</option>
-                <option>PJ</option>
-                <option>Autônomo</option>
-                <option>Meio período</option>
-                <option>Contrato</option>
-                <option>A combinar</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="job-schedule">Horário / turno</label>
-              <input id="job-schedule" name="schedule" type="text" maxlength="200">
-            </div>
-            <div class="field">
-              <label for="job-link">Link para candidatura</label>
-              <input id="job-link" name="link" type="url" inputmode="url" maxlength="2048" placeholder="https://..." required>
-            </div>
-            <div class="field">
-              <label for="contact-name">Seu nome</label>
-              <input id="contact-name" name="contactName" type="text" maxlength="160" autocomplete="name" required>
-            </div>
-            <div class="field">
-              <label for="contact-phone">WhatsApp para contato</label>
-              <input id="contact-phone" name="contactPhone" type="tel" maxlength="40" autocomplete="tel" required>
-            </div>
-            <div class="field">
-              <label for="contact-email">E-mail para contato</label>
-              <input id="contact-email" name="contactEmail" type="email" maxlength="254" autocomplete="email">
-            </div>
-            <div class="field field-wide">
-              <label for="job-activities">Atividades</label>
-              <textarea id="job-activities" name="activities" maxlength="2000" rows="4"></textarea>
-            </div>
-            <div class="field">
-              <label for="job-benefits">Benefícios</label>
-              <textarea id="job-benefits" name="benefits" maxlength="1000" rows="3"></textarea>
-            </div>
-            <div class="field">
-              <label for="job-requirements">Requisitos</label>
-              <textarea id="job-requirements" name="requirements" maxlength="1000" rows="3"></textarea>
-            </div>
+      <section id="drawer-application-view" hidden>
+        <section id="empresas" class="company-section" aria-labelledby="company-title">
+          <div class="company-inner">
+            <p class="company-kicker">PARA EMPRESAS</p>
+            <h2 id="company-title">É EMPRESA? Tem uma vaga aberta?</h2>
+            <p>Publique sua vaga no SUAVAGARS e alcance milhares de candidatos em Caxias do Sul.</p>
+            <p class="application-link">Preencher dados da vaga para análise</p>
           </div>
-          <button id="submit-application" type="submit">ENVIAR PARA ANÁLISE</button>
-          <p id="application-status" class="application-status" role="status" aria-live="polite"></p>
-        </form>
+        </section>
+
+        <section id="application-form" class="application-section" aria-labelledby="application-title">
+          <h2 id="application-title">Envie uma vaga para análise</h2>
+          <p class="application-intro">Preencha os dados da oportunidade. A vaga só será publicada depois da revisão e autorização da equipe.</p>
+          <form id="company-form" class="application-form">
+            <div class="form-grid">
+              <div class="field">
+                <label for="company-name">Empresa</label>
+                <input id="company-name" name="company" type="text" maxlength="160" autocomplete="organization" required>
+              </div>
+              <div class="field">
+                <label for="job-role">Cargo</label>
+                <input id="job-role" name="role" type="text" maxlength="160" required>
+              </div>
+              <div class="field">
+                <label for="job-city">Cidade</label>
+                <input id="job-city" name="city" type="text" maxlength="120" value="Caxias do Sul - RS" required>
+              </div>
+              <div class="field">
+                <label for="job-salary">Salário</label>
+                <input id="job-salary" name="salary" type="text" maxlength="120" placeholder="Ex.: R$ 2.500,00 ou a combinar">
+              </div>
+              <div class="field">
+                <label for="job-model">Modelo de trabalho</label>
+                <input id="job-model" name="model" type="text" maxlength="100" placeholder="Presencial, híbrido ou remoto">
+              </div>
+              <div class="field">
+                <label for="job-type">Tipo de contratação</label>
+                <select id="job-type" name="contractType" required>
+                  <option value="">Selecione...</option>
+                  <option>CLT (Efetivo)</option>
+                  <option>Temporário</option>
+                  <option>Estágio</option>
+                  <option>PJ</option>
+                  <option>Autônomo</option>
+                  <option>Meio período</option>
+                  <option>Contrato</option>
+                  <option>A combinar</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="job-schedule">Horário / turno</label>
+                <input id="job-schedule" name="schedule" type="text" maxlength="200">
+              </div>
+              <div class="field">
+                <label for="job-link">Link para candidatura</label>
+                <input id="job-link" name="link" type="url" inputmode="url" maxlength="2048" placeholder="https://..." required>
+              </div>
+              <div class="field">
+                <label for="contact-name">Seu nome</label>
+                <input id="contact-name" name="contactName" type="text" maxlength="160" autocomplete="name" required>
+              </div>
+              <div class="field">
+                <label for="contact-phone">WhatsApp para contato</label>
+                <input id="contact-phone" name="contactPhone" type="tel" maxlength="40" autocomplete="tel" required>
+              </div>
+              <div class="field">
+                <label for="contact-email">E-mail para contato</label>
+                <input id="contact-email" name="contactEmail" type="email" maxlength="254" autocomplete="email">
+              </div>
+              <div class="field field-wide">
+                <label for="job-activities">Atividades</label>
+                <textarea id="job-activities" name="activities" maxlength="2000" rows="4"></textarea>
+              </div>
+              <div class="field">
+                <label for="job-benefits">Benefícios</label>
+                <textarea id="job-benefits" name="benefits" maxlength="1000" rows="3"></textarea>
+              </div>
+              <div class="field">
+                <label for="job-requirements">Requisitos</label>
+                <textarea id="job-requirements" name="requirements" maxlength="1000" rows="3"></textarea>
+              </div>
+            </div>
+            <button id="submit-application" type="submit">ENVIAR PARA ANÁLISE</button>
+            <p id="application-status" class="application-status" role="status" aria-live="polite"></p>
+          </form>
+        </section>
       </section>
     </div>
-  </main>
+  </dialog>
 
   <footer>
     <p class="disclaimer">Aviso Legal: O SuaVaga RS é apenas um divulgador de vagas. Não somos a empresa contratante, não recebemos currículos e não participamos do processo seletivo. Todas as vagas são redirecionadas para sites externos de emprego. Verifique sempre as informações diretamente no site oficial da vaga antes de se candidatar.</p>
@@ -150,37 +164,85 @@
       var submitApplicationButton = document.getElementById("submit-application");
       var menuToggle = document.getElementById("mobile-menu-toggle");
       var siteNavigation = document.getElementById("site-navigation");
+      var siteDrawer = document.getElementById("site-drawer");
+      var drawerClose = document.getElementById("drawer-close");
+      var drawerBack = document.getElementById("drawer-back");
+      var drawerTitle = document.getElementById("drawer-title");
+      var drawerContent = document.getElementById("drawer-content");
+      var drawerJobsView = document.getElementById("drawer-jobs-view");
+      var drawerApplicationView = document.getElementById("drawer-application-view");
+      var drawerScrollY = 0;
       var vacancies = [];
 
-      function closeNavigation() {
-        siteNavigation.classList.remove("is-open");
-        menuToggle.setAttribute("aria-expanded", "false");
-        menuToggle.setAttribute("aria-label", "Abrir menu de navegação");
+      function resetDrawer() {
+        siteDrawer.dataset.state = "menu";
+        drawerTitle.textContent = "Menu";
+        drawerBack.hidden = true;
+        siteNavigation.hidden = false;
+        drawerContent.hidden = true;
+        drawerJobsView.hidden = true;
+        drawerApplicationView.hidden = true;
+        searchForm.hidden = true;
+      }
+
+      function closeDrawer() {
+        if (siteDrawer.open) siteDrawer.close();
+      }
+
+      function openDrawer() {
+        drawerScrollY = window.scrollY;
+        resetDrawer();
+        siteDrawer.showModal();
+        menuToggle.setAttribute("aria-expanded", "true");
+        menuToggle.setAttribute("aria-label", "Fechar menu de navegação");
       }
 
       menuToggle.addEventListener("click", function () {
-        var isOpen = menuToggle.getAttribute("aria-expanded") === "true";
-        siteNavigation.classList.toggle("is-open", !isOpen);
-        menuToggle.setAttribute("aria-expanded", String(!isOpen));
-        menuToggle.setAttribute("aria-label", isOpen ? "Abrir menu de navegação" : "Fechar menu de navegação");
+        if (siteDrawer.open) closeDrawer();
+        else openDrawer();
       });
 
       siteNavigation.addEventListener("click", function (event) {
-        var link = event.target.closest("a");
-        if (!link) return;
-        closeNavigation();
-        if (link.id === "mobile-search-link") {
-          event.preventDefault();
-          searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
-          searchInput.focus({ preventScroll: true });
+        var trigger = event.target.closest("[data-drawer-view]");
+        if (!trigger) return;
+
+        var view = trigger.getAttribute("data-drawer-view");
+        siteNavigation.hidden = true;
+        drawerContent.hidden = false;
+        drawerBack.hidden = false;
+        siteDrawer.dataset.state = "content";
+        if (view === "application") {
+          drawerTitle.textContent = "Para empresas";
+          drawerJobsView.hidden = true;
+          drawerApplicationView.hidden = false;
+          searchForm.hidden = true;
+          drawerApplicationView.querySelector("input").focus({ preventScroll: true });
+        } else {
+          drawerTitle.textContent = view === "search" ? "Buscar" : "Vagas abertas";
+          drawerJobsView.hidden = false;
+          drawerApplicationView.hidden = true;
+          searchForm.hidden = view !== "search";
+          if (view === "search") searchInput.focus({ preventScroll: true });
         }
       });
 
-      document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" && menuToggle.getAttribute("aria-expanded") === "true") {
-          closeNavigation();
-          menuToggle.focus();
-        }
+      drawerBack.addEventListener("click", function () {
+        resetDrawer();
+        siteNavigation.querySelector("button").focus({ preventScroll: true });
+      });
+
+      drawerClose.addEventListener("click", closeDrawer);
+
+      siteDrawer.addEventListener("click", function (event) {
+        if (event.target === siteDrawer) closeDrawer();
+      });
+
+      siteDrawer.addEventListener("close", function () {
+        resetDrawer();
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Abrir menu de navegação");
+        if (window.scrollY !== drawerScrollY) window.scrollTo(0, drawerScrollY);
+        menuToggle.focus({ preventScroll: true });
       });
 
       function safeUrl(value) {
