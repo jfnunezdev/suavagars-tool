@@ -907,6 +907,8 @@
 
         var button = document.getElementById("add-vaga-gestor");
         button.disabled = true;
+        document.getElementById("generate-post").click();
+        copyOutput(whatsappPostOutput, whatsappStatus);
         gestorStatus.textContent = "Verificando se a vaga já está publicada...";
         try {
           var vacancy = {
