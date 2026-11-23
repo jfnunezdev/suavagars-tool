@@ -63,6 +63,7 @@
   </header>
 
   <main class="manager-page">
+    <p id="auth-status" class="manager-status" role="status" aria-live="polite">Verificando acesso...</p>
     <section id="login-panel" class="card manager-login" aria-labelledby="login-title" hidden>
       <h1 id="login-title">Entrar no painel</h1>
       <p class="intro">Área privada do GESTOR SUAVAGARS.</p>
@@ -71,7 +72,7 @@
           <label for="manager-password">Senha do painel</label>
           <input id="manager-password" type="password" autocomplete="current-password" required>
         </div>
-        <button id="login-button" type="submit">ENTRAR</button>
+        <button id="login-button" type="submit" aria-busy="false"><span class="spinner" id="login-spinner" hidden></span>ENTRAR</button>
       </form>
       <p id="login-status" class="manager-status" role="status" aria-live="polite"></p>
     </section>
@@ -81,7 +82,7 @@
         <div>
           <p class="intro">Revise as solicitações antes de publicar.</p>
         </div>
-        <button id="logout-button" class="secondary" type="button">SAIR</button>
+        <button id="logout-button" class="secondary" type="button" aria-busy="false"><span class="spinner" id="logout-spinner" hidden></span>SAIR</button>
       </header>
 
       <section class="manager-section" aria-labelledby="pending-title">
@@ -101,6 +102,7 @@
   <script>
     (function () {
       "use strict";
+      var authStatus = document.getElementById("auth-status");
       var loginPanel = document.getElementById("login-panel");
       var managerPanel = document.getElementById("manager-panel");
       var loginForm = document.getElementById("login-form");
@@ -130,12 +132,21 @@
         }
         stopPendingReminder();
         trackedPendingIds = null;
+        pendingStatus.textContent = "";
+        publishedStatus.textContent = "";
+        clearListLoading(pendingList);
+        clearListLoading(publishedList);
+        pendingList.replaceChildren();
+        publishedList.replaceChildren();
+        authStatus.hidden = true;
         loginPanel.hidden = false;
         managerPanel.hidden = true;
         if (message) loginStatus.textContent = message;
+        document.getElementById("manager-password").focus();
       }
 
       function showManager() {
+        authStatus.hidden = true;
         loginPanel.hidden = true;
         managerPanel.hidden = false;
         loadManagerData();
@@ -272,10 +283,44 @@
         list.appendChild(row);
       }
 
+      function createEmptyState(message) {
+        var wrapper = document.createElement("div");
+        wrapper.className = "empty-state";
+        var paragraph = document.createElement("p");
+        paragraph.textContent = message;
+        wrapper.appendChild(paragraph);
+        return wrapper;
+      }
+
+      function clearListLoading(list) {
+        list.removeAttribute("aria-busy");
+      }
+
+      function showListLoading(list, count) {
+        list.replaceChildren();
+        for (var index = 0; index < count; index += 1) {
+          var card = document.createElement("div");
+          card.className = "skeleton-card";
+          card.setAttribute("aria-hidden", "true");
+          ["skeleton skeleton-line long", "skeleton skeleton-line short", "skeleton skeleton-line short"].forEach(function (lineClass) {
+            var line = document.createElement("div");
+            line.className = lineClass;
+            card.appendChild(line);
+          });
+          list.appendChild(card);
+        }
+        list.setAttribute("aria-busy", "true");
+      }
+
       function addActionButton(container, label, className, handler) {
         var button = document.createElement("button");
         button.type = "button";
-        button.textContent = label;
+        button.setAttribute("aria-busy", "false");
+        var spinner = document.createElement("span");
+        spinner.className = "spinner";
+        spinner.hidden = true;
+        button.appendChild(spinner);
+        button.appendChild(document.createTextNode(" " + label));
         if (className) button.className = className;
         button.addEventListener("click", handler);
         container.appendChild(button);
@@ -283,10 +328,12 @@
       }
 
       function renderPending(applications) {
+        clearListLoading(pendingList);
         pendingList.replaceChildren();
         pendingCount.textContent = String(applications.length);
         if (!applications.length) {
           pendingStatus.textContent = "Não há vagas aguardando revisão.";
+          pendingList.appendChild(createEmptyState("Nenhuma solicitação pendente no momento."));
           return;
         }
         pendingStatus.textContent = "Revise os dados e autorize apenas as vagas que devem aparecer no site.";
@@ -334,9 +381,11 @@
       }
 
       function renderPublished(vacancies) {
+        clearListLoading(publishedList);
         publishedList.replaceChildren();
         if (!vacancies.length) {
           publishedStatus.textContent = "Não há vagas publicadas.";
+          publishedList.appendChild(createEmptyState("Nenhuma vaga publicada no momento."));
           return;
         }
         publishedStatus.textContent = "Estas vagas aparecem na página pública.";
@@ -372,9 +421,12 @@
           return;
         }
         isLoadingManagerData = true;
-        if (!silent) {
+        var showLoadingState = !silent;
+        if (showLoadingState) {
           pendingStatus.textContent = "Carregando solicitações...";
           publishedStatus.textContent = "Carregando vagas...";
+          showListLoading(pendingList, 2);
+          showListLoading(publishedList, 2);
         }
         try {
           var responses = await Promise.all([
@@ -403,7 +455,7 @@
           var hasNewApplications = !isFirstPendingLoad &&
             Array.from(currentPendingIds).some(function (id) { return !trackedPendingIds.has(id); });
           trackedPendingIds = currentPendingIds;
-          if (pendingListChanged) renderPending(applications);
+          if (pendingListChanged || showLoadingState) renderPending(applications);
           renderPublished(results[1].vagas);
           if (!applications.length) {
             stopPendingReminder();
@@ -411,8 +463,13 @@
             startPendingReminder(isFirstPendingLoad || hasNewApplications);
           }
         } catch (error) {
-          pendingStatus.textContent = error.message || "Não foi possível carregar as solicitações.";
+          var pendingMessage = error.message || "Não foi possível carregar as solicitações.";
+          pendingStatus.textContent = pendingMessage;
           publishedStatus.textContent = "Atualize a página para tentar novamente.";
+          clearListLoading(pendingList);
+          clearListLoading(publishedList);
+          pendingList.replaceChildren(createEmptyState(pendingMessage));
+          publishedList.replaceChildren(createEmptyState("Atualize a página para tentar novamente."));
         } finally {
           isLoadingManagerData = false;
           if (reloadAfterCurrentLoad) {
@@ -424,6 +481,9 @@
 
       async function processApplication(id, action, button) {
         button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        var spinner = button.querySelector(".spinner");
+        if (spinner) spinner.hidden = false;
         pendingStatus.textContent = action === "approve" ? "Publicando vaga..." : "Recusando solicitação...";
         try {
           var response = await fetch("/api/candidaturas", {
@@ -437,11 +497,17 @@
         } catch (error) {
           pendingStatus.textContent = error.message || "Não foi possível processar a solicitação.";
           button.disabled = false;
+          button.setAttribute("aria-busy", "false");
+          var spinner = button.querySelector(".spinner");
+          if (spinner) spinner.hidden = true;
         }
       }
 
       async function deleteVacancy(id, button) {
         button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        var spinner = button.querySelector(".spinner");
+        if (spinner) spinner.hidden = false;
         publishedStatus.textContent = "Excluindo vaga...";
         try {
           var response = await fetch("/api/vagas", {
@@ -455,12 +521,17 @@
         } catch (error) {
           publishedStatus.textContent = error.message || "Não foi possível excluir a vaga.";
           button.disabled = false;
+          button.setAttribute("aria-busy", "false");
+          var spinner = button.querySelector(".spinner");
+          if (spinner) spinner.hidden = true;
         }
       }
 
       loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         loginButton.disabled = true;
+        loginButton.setAttribute("aria-busy", "true");
+        document.getElementById("login-spinner").hidden = false;
         loginStatus.textContent = "Validando acesso...";
         try {
           var response = await fetch("/api/gestor-auth", {
@@ -477,11 +548,19 @@
           loginStatus.textContent = error.message || "Não foi possível entrar.";
         } finally {
           loginButton.disabled = false;
+          loginButton.setAttribute("aria-busy", "false");
+          document.getElementById("login-spinner").hidden = true;
         }
       });
 
       logoutButton.addEventListener("click", async function () {
+        logoutButton.disabled = true;
+        logoutButton.setAttribute("aria-busy", "true");
+        document.getElementById("logout-spinner").hidden = false;
         await fetch("/api/gestor-auth", { method: "DELETE", cache: "no-store" });
+        logoutButton.disabled = false;
+        logoutButton.setAttribute("aria-busy", "false");
+        document.getElementById("logout-spinner").hidden = true;
         showLogin("Você saiu do painel.");
       });
 

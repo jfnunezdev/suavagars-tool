@@ -51,7 +51,7 @@
         <label for="linkVaga">🔗 Cole o link da vaga para buscar os dados</label>
         <input id="linkVaga" type="url" inputmode="url" placeholder="Cole o link da vaga e clique em “Buscar dados do link”" autocomplete="url">
       </div>
-      <button id="fetch-button" class="secondary" type="button">Buscar dados do link</button>
+      <button id="fetch-button" class="secondary" type="button" aria-busy="false"><span class="spinner" id="fetch-spinner" hidden></span>Buscar dados do link</button>
       <p id="fetch-status" class="status" role="status" aria-live="polite"></p>
 
       <div class="field">
@@ -109,11 +109,11 @@
         <input id="requirements" type="text" placeholder="Opcional">
       </div>
       <div class="button-row generate-actions">
-        <button id="generate-post" type="button">GERAR POST</button>
+        <button id="generate-post" type="button" aria-busy="false"><span class="spinner" id="generate-spinner" hidden></span>GERAR POST</button>
         <button id="new-job" class="clear-button" type="button">🔄 NOVA VAGA / LIMPAR</button>
       </div>
       <div class="button-row">
-        <button id="add-vaga-gestor" class="whatsapp" type="button">PUBLICAR</button>
+        <button id="add-vaga-gestor" class="whatsapp" type="button" aria-busy="false"><span class="spinner" id="publish-spinner" hidden></span>PUBLICAR</button>
       </div>
       <p id="gestor-status" class="status" role="status" aria-live="polite"></p>
       <p id="post-status" class="status" role="status" aria-live="polite"></p>
@@ -136,7 +136,7 @@
           <h2 id="image-heading">Imagem para Instagram</h2>
           <p class="intro">Gere a arte quadrada para acompanhar a legenda.</p>
           <div class="button-row">
-            <button id="generate-image" type="button">GERAR IMAGEM PARA INSTAGRAM</button>
+            <button id="generate-image" type="button" aria-busy="false"><span class="spinner" id="image-spinner" hidden></span>GERAR IMAGEM PARA INSTAGRAM</button>
             <button id="download-image" class="secondary" type="button" disabled>BAIXAR IMAGEM</button>
             <button id="btnCopiarImagem" class="whatsapp" type="button" disabled>📋 COPIAR IMAGEM</button>
             <button id="btnCompartilharImagem" class="whatsapp" type="button" hidden>📤 COMPARTILHAR IMAGEM</button>

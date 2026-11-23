@@ -1,0 +1,28 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": "standard",
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "script"
+  },
+  "rules": {
+    "indent": ["error", 2],
+    "quotes": ["error", "double"],
+    "semi": ["error", "never"],
+    "no-console": "off",
+    "no-unused-vars": "warn",
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "curly": ["error", "all"],
+    "no-var": "error",
+    "prefer-const": "error",
+    "no-tabs": "error",
+    "comma-dangle": ["error", "never"],
+    "space-before-function-paren": ["error", "always"],
+    "keyword-spacing": ["error", { "before": true, "after": true }]
+  },
+  "ignorePatterns": ["node_modules/", "public/", "data/", "*.json", "*.png", "vercel.json", ".gitignore"]
+}

@@ -1,8 +1,8 @@
-"use strict";
+"use strict"
 
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const { validateApplication } = require("../api/candidaturas");
+const test = require("node:test")
+const assert = require("node:assert/strict")
+const { validateApplication } = require("../api/candidaturas")
 
 const validApplication = {
   role: "Atendente",
@@ -13,22 +13,22 @@ const validApplication = {
   link: "https://example.com/candidatar",
   contactName: "Contato",
   contactPhone: "(54) 99999-0000"
-};
+}
 
 test("validates and stores a company vacancy as pending", () => {
-  const application = validateApplication(validApplication);
+  const application = validateApplication(validApplication)
 
-  assert.equal(application.role, "Atendente");
-  assert.equal(application.company, "Empresa Teste");
-  assert.equal(application.link, "https://example.com/candidatar");
-  assert.ok(application.id);
-  assert.ok(application.createdAt);
-});
+  assert.equal(application.role, "Atendente")
+  assert.equal(application.company, "Empresa Teste")
+  assert.equal(application.link, "https://example.com/candidatar")
+  assert.ok(application.id)
+  assert.ok(application.createdAt)
+})
 
 test("rejects a submission without a required job title", () => {
-  assert.throws(() => validateApplication({ ...validApplication, role: " " }), /Informe o cargo/);
-});
+  assert.throws(() => validateApplication({ ...validApplication, role: " " }), /Informe o cargo/)
+})
 
 test("rejects a non-public application link", () => {
-  assert.throws(() => validateApplication({ ...validApplication, link: "javascript:alert(1)" }), /link público HTTP ou HTTPS/);
-});
+  assert.throws(() => validateApplication({ ...validApplication, link: "javascript:alert(1)" }), /link público HTTP ou HTTPS/)
+})

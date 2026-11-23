@@ -65,6 +65,7 @@
         while (jobsList.firstChild) jobsList.removeChild(jobsList.firstChild);
         if (!items.length) {
           jobsStatus.textContent = "Nenhuma vaga publicada no momento. Volte amanhã, novas vagas todos os dias.";
+          jobsList.innerHTML = '<div class="empty-state"><p>Nenhuma vaga publicada no momento. Volte amanhã, novas vagas todos os dias.</p></div>';
           return;
         }
 
@@ -133,6 +134,7 @@
       });
       searchInput.addEventListener("input", filterJobs);
 
+      jobsList.innerHTML = '<div class="skeleton-card"><div class="skeleton skeleton-line long"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line short"></div></div><div class="skeleton-card"><div class="skeleton skeleton-line long"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line short"></div></div><div class="skeleton-card"><div class="skeleton skeleton-line long"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line short"></div></div>';
       fetch("/api/vagas", { cache: "no-store", headers: { "Accept": "application/json" } })
         .then(function (response) {
           if (!response.ok) throw new Error("API indisponível");
@@ -145,6 +147,7 @@
         .catch(function () {
           vacancies = [];
           jobsStatus.textContent = "Nenhuma vaga publicada no momento. Volte amanhã, novas vagas todos os dias.";
+          jobsList.innerHTML = '<div class="empty-state"><p>Nenhuma vaga publicada no momento. Volte amanhã, novas vagas todos os dias.</p></div>';
         });
     }());
   </script>
