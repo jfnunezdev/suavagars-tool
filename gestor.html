@@ -56,6 +56,12 @@
   </style>
 </head>
 <body>
+  <nav class="app-nav" aria-label="Navegação principal">
+    <a href="ferramenta.html">EDITOR DE POST</a>
+    <a href="gestor.html" aria-current="page">PAINEL DE APROVAÇÃO</a>
+    <button id="logout-button" class="secondary" type="button" aria-busy="false" hidden><span class="spinner" id="logout-spinner" hidden></span>SAIR</button>
+  </nav>
+
   <header class="manager-brand">
     <img src="logo.png" alt="" aria-hidden="true">
     <h1>GESTOR SUAVAGARS</h1>
@@ -70,7 +76,13 @@
       <form id="login-form">
         <div class="field">
           <label for="manager-password">Senha do painel</label>
-          <input id="manager-password" type="password" autocomplete="current-password" required>
+          <div class="password-field">
+            <input id="manager-password" type="password" autocomplete="current-password" required>
+            <button id="manager-password-toggle" class="password-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false">
+              <svg id="manager-password-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg id="manager-password-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M3 3l18 18"></path><path d="M10.6 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2"></path><path d="M6.2 6.2C3.6 8 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.4 4.5-1.1"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>
+            </button>
+          </div>
         </div>
         <button id="login-button" type="submit" aria-busy="false"><span class="spinner" id="login-spinner" hidden></span>ENTRAR</button>
       </form>
@@ -82,7 +94,6 @@
         <div>
           <p class="intro">Revise as solicitações antes de publicar.</p>
         </div>
-        <button id="logout-button" class="secondary" type="button" aria-busy="false"><span class="spinner" id="logout-spinner" hidden></span>SAIR</button>
       </header>
 
       <section class="manager-section" aria-labelledby="pending-title">
@@ -109,6 +120,8 @@
       var loginStatus = document.getElementById("login-status");
       var loginButton = document.getElementById("login-button");
       var logoutButton = document.getElementById("logout-button");
+      var managerPassword = document.getElementById("manager-password");
+      var passwordToggle = document.getElementById("manager-password-toggle");
       var pendingList = document.getElementById("pending-list");
       var pendingStatus = document.getElementById("pending-status");
       var pendingCount = document.getElementById("pending-count");
@@ -124,6 +137,14 @@
       var reminderTimer = null;
       var pendingAlertActive = false;
       var originalPageTitle = document.title;
+
+      function resetPasswordToggle() {
+        managerPassword.type = "password";
+        passwordToggle.setAttribute("aria-label", "Mostrar senha");
+        passwordToggle.setAttribute("aria-pressed", "false");
+        document.getElementById("manager-password-eye").hidden = false;
+        document.getElementById("manager-password-eye-off").hidden = true;
+      }
 
       function showLogin(message) {
         if (refreshTimer) {
@@ -141,6 +162,8 @@
         authStatus.hidden = true;
         loginPanel.hidden = false;
         managerPanel.hidden = true;
+        logoutButton.hidden = true;
+        resetPasswordToggle();
         if (message) loginStatus.textContent = message;
         document.getElementById("manager-password").focus();
       }
@@ -149,6 +172,8 @@
         authStatus.hidden = true;
         loginPanel.hidden = true;
         managerPanel.hidden = false;
+        logoutButton.hidden = false;
+        resetPasswordToggle();
         loadManagerData();
         if (!refreshTimer) {
           refreshTimer = window.setInterval(function () {
@@ -526,6 +551,16 @@
           if (spinner) spinner.hidden = true;
         }
       }
+
+      passwordToggle.addEventListener("click", function () {
+        var visible = managerPassword.type === "password";
+        managerPassword.type = visible ? "text" : "password";
+        passwordToggle.setAttribute("aria-label", visible ? "Ocultar senha" : "Mostrar senha");
+        passwordToggle.setAttribute("aria-pressed", visible ? "true" : "false");
+        document.getElementById("manager-password-eye").hidden = visible;
+        document.getElementById("manager-password-eye-off").hidden = !visible;
+        managerPassword.focus();
+      });
 
       loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();

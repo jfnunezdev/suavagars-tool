@@ -29,13 +29,16 @@
 
     .app-nav {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: min(100%, 900px);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
-      margin: 0 0 16px;
+      margin: 0 auto 16px;
     }
 
-    .app-nav a {
+    .app-nav a,
+    .app-nav button {
       display: flex;
+      width: 100%;
       min-height: 48px;
       align-items: center;
       justify-content: center;
@@ -50,7 +53,8 @@
       text-decoration: none;
     }
 
-    .app-nav a:hover { background: #e6f4ff; }
+    .app-nav a:hover,
+    .app-nav button:hover { background: #e6f4ff; }
 
     header {
       display: grid;
@@ -126,6 +130,28 @@
       outline-offset: 2px;
       border-color: var(--blue);
     }
+
+    .password-field { position: relative; }
+    .password-field input { padding-right: 54px; }
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      display: inline-flex;
+      width: 38px;
+      height: 38px;
+      min-height: 38px;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transform: translateY(-50%);
+      border: 1px solid #a9cce6;
+      border-radius: 9px;
+      background: #f3faff;
+      color: var(--blue);
+    }
+    .password-toggle:hover { background: #e6f4ff; }
+    .password-toggle svg { width: 20px; height: 20px; display: block; }
 
     button {
       width: 100%;
