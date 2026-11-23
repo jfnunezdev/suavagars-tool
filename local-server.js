@@ -55,11 +55,18 @@ const mimeTypes = {
 }
 const publicAssets = new Map([
   ["/manifest.json", path.join("public", "manifest.json")],
-  ["/gestor-manifest.json", path.join("public", "gestor-manifest.json")],
-  ["/ferramenta-manifest.json", path.join("public", "ferramenta-manifest.json")],
   ["/sw.js", path.join("public", "sw.js")],
   ["/icon-192.png", path.join("public", "icon-192.png")],
-  ["/icon-512.png", path.join("public", "icon-512.png")]
+  ["/icon-512.png", path.join("public", "icon-512.png")],
+  ["/admin/", path.join("admin", "index.html")]
+])
+const redirects = new Map([
+  ["/admin", "/admin/"],
+  ["/ferramenta", "/admin/"],
+  ["/ferramenta.html", "/admin/"],
+  ["/gestor", "/admin/"],
+  ["/gestor.html", "/admin/"],
+  ["/vagas", "/vagas.html"]
 ])
 const server = http.createServer((request, response) => {
   const ip = getClientIp(request)
@@ -71,10 +78,15 @@ const server = http.createServer((request, response) => {
 
   const requestUrl = new URL(request.url, "http://127.0.0.1")
   const isApi = requestUrl.pathname.startsWith("/api/")
+  const isPrivate = requestUrl.pathname === "/admin" || requestUrl.pathname.startsWith("/admin/")
 
   const originalWriteHead = response.writeHead.bind(response)
   response.writeHead = (statusCode, headers) => {
     const mergedHeaders = { ...(headers || {}) }
+    if (isPrivate) {
+      mergedHeaders["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+      mergedHeaders["Cache-Control"] = "private, no-store, max-age=0"
+    }
     setSecurityHeaders(response, isApi)
     Object.entries(mergedHeaders).forEach(([key, value]) => {
       response.setHeader(key, value)
@@ -110,6 +122,12 @@ const server = http.createServer((request, response) => {
   } catch {
     response.writeHead(400)
     response.end("Invalid path")
+    return
+  }
+  const redirectTarget = redirects.get(pathname)
+  if (redirectTarget) {
+    response.writeHead(302, { Location: redirectTarget })
+    response.end()
     return
   }
   const relativePath = publicAssets.get(pathname) || (pathname === "/" ? "index.html" : pathname.slice(1))

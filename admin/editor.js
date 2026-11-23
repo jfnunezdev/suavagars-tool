@@ -1,4 +1,4 @@
-(function () {
+;(function () {
   "use strict"
 
   const linkInput = document.getElementById("linkVaga")
@@ -48,7 +48,11 @@
     benefits: benefitsInput,
     requirements: requirementsInput
   }
-  if (!Array.from(contractTypeInput.options).some(function (option) { return option.value === "Autônomo" })) {
+  if (
+    !Array.from(contractTypeInput.options).some(function (option) {
+      return option.value === "Autônomo"
+    })
+  ) {
     const autonomousOption = document.createElement("option")
     autonomousOption.value = "Autônomo"
     autonomousOption.textContent = "Autônomo"
@@ -82,16 +86,27 @@
   function resolveDuplicateConfirmation (confirmed) {
     const resolve = duplicateConfirmationResolver
     duplicateConfirmationResolver = null
-    if (typeof duplicateDialog.close === "function" && duplicateDialog.open) { duplicateDialog.close() }
-    if (resolve) { resolve(confirmed) }
+    if (typeof duplicateDialog.close === "function" && duplicateDialog.open) {
+      duplicateDialog.close()
+    }
+    if (resolve) {
+      resolve(confirmed)
+    }
   }
 
   function confirmDuplicateVacancy (duplicate) {
-    const message = "Você já publicou essa vaga antes:\n" +
-          "Empresa: " + (duplicate.company || "A consultar") + "\n" +
-          "Cargo: " + (duplicate.role || "A consultar") + "\n" +
-          "Publicada em: " + duplicateDateLabel(duplicate.createdAt) + "\n" +
-          "¿Deseja adicionar mesmo assim?"
+    const message =
+      "Você já publicou essa vaga antes:\n" +
+      "Empresa: " +
+      (duplicate.company || "A consultar") +
+      "\n" +
+      "Cargo: " +
+      (duplicate.role || "A consultar") +
+      "\n" +
+      "Publicada em: " +
+      duplicateDateLabel(duplicate.createdAt) +
+      "\n" +
+      "¿Deseja adicionar mesmo assim?"
     duplicateMessage.textContent = message
     if (typeof duplicateDialog.showModal !== "function") {
       return Promise.resolve(window.confirm("⚠️ ATENÇÃO! VAGA DUPLICADA\n" + message))
@@ -114,23 +129,46 @@
     resolveDuplicateConfirmation(false)
   })
   duplicateDialog.addEventListener("close", function () {
-    if (duplicateConfirmationResolver) { resolveDuplicateConfirmation(false) }
+    if (duplicateConfirmationResolver) {
+      resolveDuplicateConfirmation(false)
+    }
   })
 
   function isPublicWebLink (parsed) {
-    if (parsed.username || parsed.password) { return false }
+    if (parsed.username || parsed.password) {
+      return false
+    }
     const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, "")
-    if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") ||
-            host === "0.0.0.0" || host.indexOf(":") !== -1) { return false }
+    if (
+      host === "localhost" ||
+      host.endsWith(".localhost") ||
+      host.endsWith(".local") ||
+      host === "0.0.0.0" ||
+      host.indexOf(":") !== -1
+    ) {
+      return false
+    }
     const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
     if (ipv4) {
       const parts = ipv4.slice(1).map(Number)
-      if (parts.some(function (part) { return part > 255 })) { return false }
-      if (parts[0] === 10 || parts[0] === 127 || parts[0] === 0 ||
-              (parts[0] === 169 && parts[1] === 254) ||
-              (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
-              (parts[0] === 192 && parts[1] === 168) ||
-              (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127)) { return false }
+      if (
+        parts.some(function (part) {
+          return part > 255
+        })
+      ) {
+        return false
+      }
+      if (
+        parts[0] === 10 ||
+        parts[0] === 127 ||
+        parts[0] === 0 ||
+        (parts[0] === 169 && parts[1] === 254) ||
+        (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+        (parts[0] === 192 && parts[1] === 168) ||
+        (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127)
+      ) {
+        return false
+      }
     }
     return true
   }
@@ -139,10 +177,21 @@
     const value = linkInput.value.trim()
     try {
       const parsed = new URL(value)
-      if ((parsed.protocol !== "http:" && parsed.protocol !== "https:") || !isPublicWebLink(parsed)) { return "" }
-      if (Array.from(parsed.searchParams.keys()).some(function (key) {
-        return /^(?:token|access_token|api_key|key|auth|authorization|code|session|signature|secret|password)$/i.test(key)
-      })) { return "" }
+      if (
+        (parsed.protocol !== "http:" && parsed.protocol !== "https:") ||
+        !isPublicWebLink(parsed)
+      ) {
+        return ""
+      }
+      if (
+        Array.from(parsed.searchParams.keys()).some(function (key) {
+          return /^(?:token|access_token|api_key|key|auth|authorization|code|session|signature|secret|password)$/i.test(
+            key
+          )
+        })
+      ) {
+        return ""
+      }
       return parsed.href
     } catch (error) {
       return ""
@@ -165,15 +214,35 @@
   function setAutoValue (field, value) {
     const input = editableFields[field]
     let cleaned = (value || "").replace(/\s+/g, " ").trim()
-    if (field === "schedule") { cleaned = normalizeSchedule(cleaned) }
-    if (field === "city") { cleaned = normalizeCityValue(cleaned) }
-    if (!input || !cleaned || isInvalidJobText(cleaned) || isTokenLike(cleaned) ||
-            (field === "role" && !isPlausibleJobTitle(cleaned)) || manualFields[field]) { return false }
+    if (field === "schedule") {
+      cleaned = normalizeSchedule(cleaned)
+    }
+    if (field === "city") {
+      cleaned = normalizeCityValue(cleaned)
+    }
+    if (
+      !input ||
+      !cleaned ||
+      isInvalidJobText(cleaned) ||
+      isTokenLike(cleaned) ||
+      (field === "role" && !isPlausibleJobTitle(cleaned)) ||
+      manualFields[field]
+    ) {
+      return false
+    }
     const current = input.value.trim()
     const isDefault = !current || current === defaultFieldValues[field]
-    if (!isDefault && current !== lastAutoValues[field]) { return false }
-    if (input.tagName === "SELECT" &&
-            !Array.from(input.options).some(function (option) { return option.value === cleaned })) { return false }
+    if (!isDefault && current !== lastAutoValues[field]) {
+      return false
+    }
+    if (
+      input.tagName === "SELECT" &&
+      !Array.from(input.options).some(function (option) {
+        return option.value === cleaned
+      })
+    ) {
+      return false
+    }
     input.value = cleaned
     lastAutoValues[field] = cleaned
     return true
@@ -186,14 +255,24 @@
     const cleaned = title
       .replace(/\s*[|–—-]\s*(?:Catho|Indeed|Gupy|InfoJobs|LinkedIn|Instagram|Google Jobs).*$/i, "")
       .trim()
-    if (!cleaned || /^(?:catho|indeed|gupy|infojobs|linkedin|google(?: jobs)?|instagram)$/i.test(cleaned)) { return false }
-    const parts = cleaned.split(/\s(?:-|–|—|\|)\s/).map(function (part) {
-      return part.trim()
-    }).filter(Boolean)
+    if (
+      !cleaned ||
+      /^(?:catho|indeed|gupy|infojobs|linkedin|google(?: jobs)?|instagram)$/i.test(cleaned)
+    ) {
+      return false
+    }
+    const parts = cleaned
+      .split(/\s(?:-|–|—|\|)\s/)
+      .map(function (part) {
+        return part.trim()
+      })
+      .filter(Boolean)
 
     if (parts.length >= 2) {
       setTrackedValue("role", parts[0], filled)
-      if (!findCityInText(parts[1])) { setTrackedValue("company", parts[1], filled) }
+      if (!findCityInText(parts[1])) {
+        setTrackedValue("company", parts[1], filled)
+      }
     } else if (cleaned) {
       setTrackedValue("role", cleaned, filled)
     }
@@ -202,78 +281,140 @@
 
   function isInvalidJobText (value) {
     const text = (value || "").trim()
-    return /\b(?:401|403|404|500)\b/i.test(text) ||
-          /(?:access\s*denied|google\s*search|just\s+a\s+moment|redirecting|page\s+not\s+found|not\s+found|forbidden|captcha|cloudflare|temporarily\s+unavailable)/i.test(text) ||
-          /^(?:error|an?\s+error\s+occurred|something\s+went\s+wrong)(?:\b.*)?$/i.test(text)
+    return (
+      /\b(?:401|403|404|500)\b/i.test(text) ||
+      /(?:access\s*denied|google\s*search|just\s+a\s+moment|redirecting|page\s+not\s+found|not\s+found|forbidden|captcha|cloudflare|temporarily\s+unavailable)/i.test(
+        text
+      ) ||
+      /^(?:error|an?\s+error\s+occurred|something\s+went\s+wrong)(?:\b.*)?$/i.test(text)
+    )
   }
 
   function isTokenLike (value) {
     const text = (value || "").trim()
-    if (!text) { return false }
+    if (!text) {
+      return false
+    }
     const compact = text.replace(/[^a-z0-9]/gi, "")
-    const mixedCaseToken = /^[a-z0-9_-]{24,}$/i.test(text) &&
-          /[a-z]/.test(text) && /[A-Z]/.test(text)
+    const mixedCaseToken =
+      /^[a-z0-9_-]{24,}$/i.test(text) && /[a-z]/.test(text) && /[A-Z]/.test(text)
     const digitCount = (compact.match(/\d/g) || []).length
-    const shortMixedToken = /^[a-z0-9]{16,}$/i.test(text) &&
-          /[a-z]/.test(text) && /[A-Z]/.test(text) && digitCount >= 2
-    if (mixedCaseToken || shortMixedToken) { return true }
+    const shortMixedToken =
+      /^[a-z0-9]{16,}$/i.test(text) && /[a-z]/.test(text) && /[A-Z]/.test(text) && digitCount >= 2
+    if (mixedCaseToken || shortMixedToken) {
+      return true
+    }
 
     const words = text.match(/[a-zÀ-ÿ]+/gi) || []
-    return words.some(function (word) {
-      const normalized = word.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      const vowels = (normalized.match(/[aeiou]/g) || []).length
-      const ratio = vowels / normalized.length
-      return (normalized.length >= 20 && ratio < 0.31) ||
-            (normalized.length >= 28 && ratio < 0.38) ||
-            (normalized.length >= 36 && compact.length >= 36)
-    }) || (/^[a-z0-9]+$/i.test(compact) && compact.length >= 34 &&
-          (compact.match(/[aeiou]/gi) || []).length / compact.length < 0.32)
+    return (
+      words.some(function (word) {
+        const normalized = word
+          .toLocaleLowerCase("pt-BR")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+        const vowels = (normalized.match(/[aeiou]/g) || []).length
+        const ratio = vowels / normalized.length
+        return (
+          (normalized.length >= 20 && ratio < 0.31) ||
+          (normalized.length >= 28 && ratio < 0.38) ||
+          (normalized.length >= 36 && compact.length >= 36)
+        )
+      }) ||
+      (/^[a-z0-9]+$/i.test(compact) &&
+        compact.length >= 34 &&
+        (compact.match(/[aeiou]/gi) || []).length / compact.length < 0.32)
+    )
   }
 
   function isPlausibleJobTitle (value) {
     const text = (value || "").trim()
-    if (!text || isInvalidJobText(text) || isTokenLike(text)) { return false }
-    const normalized = text.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    return !/^(?:vaga|vagas|emprego|empregos|job|jobs|career|careers|oportunidade|oportunidades|google search|linkedin|catho|indeed|gupy|infojobs|a consultar|cargo nao identificado)$/i.test(normalized) &&
-          (normalized.match(/[a-z]/g) || []).length >= 3
+    if (!text || isInvalidJobText(text) || isTokenLike(text)) {
+      return false
+    }
+    const normalized = text
+      .toLocaleLowerCase("pt-BR")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+    return (
+      !/^(?:vaga|vagas|emprego|empregos|job|jobs|career|careers|oportunidade|oportunidades|google search|linkedin|catho|indeed|gupy|infojobs|a consultar|cargo nao identificado)$/i.test(
+        normalized
+      ) && (normalized.match(/[a-z]/g) || []).length >= 3
+    )
   }
 
   function isPlausibleSchedule (value) {
-    const normalized = (value || "").toLocaleLowerCase("pt-BR").normalize("NFD")
+    const normalized = (value || "")
+      .toLocaleLowerCase("pt-BR")
+      .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/\u00a0/g, " ")
       .replace(/\s+/g, " ")
       .trim()
-    if (!normalized) { return false }
-    if (/\b(?:horario\s+comercial|horario\s+(?:flexivel|variavel|a combinar)|flexibilidade\s+de\s+horarios?|diurno|noturno)\b/.test(normalized) ||
-            /\bflexivel\s+conforme\s+(?:a\s+)?(?:demanda|necessidade)\b/.test(normalized) ||
-            /\bconforme\s+(?:a\s+)?(?:demanda|necessidade)(?:\s+de\s+(?:visitas|atendimento))?\b/.test(normalized) ||
-            /\bturno(?:\s+(?:da|de|do)\s+)?(?:manha|tarde|noite|madrugada)\b/.test(normalized) ||
-            /\b\d{1,2}\s*x\s*\d{1,2}\b/.test(normalized) ||
-            /\bescala\s+(?:de\s+)?(?:trabalho|revezamento|rotativa|alternada|flexivel|a\s+combinar)\b/.test(normalized) ||
-            /\b(?:segunda(?:-feira)?|terca(?:-feira)?|quarta(?:-feira)?|quinta(?:-feira)?|sexta(?:-feira)?|sabado|domingo|seg|ter|qua|qui|sex|sab|dom)\s+(?:a|ate|[-–—])\s*(?:segunda(?:-feira)?|terca(?:-feira)?|quarta(?:-feira)?|quinta(?:-feira)?|sexta(?:-feira)?|sabado|domingo|seg|ter|qua|qui|sex|sab|dom)\b/.test(normalized)) {
+    if (!normalized) {
+      return false
+    }
+    if (
+      /\b(?:horario\s+comercial|horario\s+(?:flexivel|variavel|a combinar)|flexibilidade\s+de\s+horarios?|diurno|noturno)\b/.test(
+        normalized
+      ) ||
+      /\bflexivel\s+conforme\s+(?:a\s+)?(?:demanda|necessidade)\b/.test(normalized) ||
+      /\bconforme\s+(?:a\s+)?(?:demanda|necessidade)(?:\s+de\s+(?:visitas|atendimento))?\b/.test(
+        normalized
+      ) ||
+      /\bturno(?:\s+(?:da|de|do)\s+)?(?:manha|tarde|noite|madrugada)\b/.test(normalized) ||
+      /\b\d{1,2}\s*x\s*\d{1,2}\b/.test(normalized) ||
+      /\bescala\s+(?:de\s+)?(?:trabalho|revezamento|rotativa|alternada|flexivel|a\s+combinar)\b/.test(
+        normalized
+      ) ||
+      /\b(?:segunda(?:-feira)?|terca(?:-feira)?|quarta(?:-feira)?|quinta(?:-feira)?|sexta(?:-feira)?|sabado|domingo|seg|ter|qua|qui|sex|sab|dom)\s+(?:a|ate|[-–—])\s*(?:segunda(?:-feira)?|terca(?:-feira)?|quarta(?:-feira)?|quinta(?:-feira)?|sexta(?:-feira)?|sabado|domingo|seg|ter|qua|qui|sex|sab|dom)\b/.test(
+        normalized
+      )
+    ) {
       return true
     }
 
-    const ranges = /\b(?:das?\s*)?((?:[01]?\d|2[0-3])(?::[0-5]\d|h(?:[0-5]\d)?)?)\s*(?:as|[-–—])\s*((?:[01]?\d|2[0-3])(?::[0-5]\d|h(?:[0-5]\d)?)?)\b/gi
+    const ranges =
+      /\b(?:das?\s*)?((?:[01]?\d|2[0-3])(?::[0-5]\d|h(?:[0-5]\d)?)?)\s*(?:as|[-–—])\s*((?:[01]?\d|2[0-3])(?::[0-5]\d|h(?:[0-5]\d)?)?)\b/gi
     let match
     while ((match = ranges.exec(normalized))) {
-      if (/[h:]/i.test(match[1]) || /[h:]/i.test(match[2]) ||
-              (match[1].length === 2 && match[2].length === 2)) { return true }
+      if (
+        /[h:]/i.test(match[1]) ||
+        /[h:]/i.test(match[2]) ||
+        (match[1].length === 2 && match[2].length === 2)
+      ) {
+        return true
+      }
     }
     return false
   }
 
   function normalizeSchedule (value) {
     const cleaned = (value || "").replace(/\s+/g, " ").trim()
-    if (!cleaned || cleaned.length > 180) { return "" }
-    if (/^hor[aá]rio\s+(?:comercial|flex[ií]vel|vari[aá]vel|a\s+combinar)\b/i.test(cleaned) &&
-            isPlausibleSchedule(cleaned)) { return cleaned }
-    const withoutLabel = cleaned.replace(/^(?:hor[aá]rio(?:\s+de\s+trabalho)?(?:\s*\/\s*turno)?|turno|jornada|work\s*hours)\s*[:\-–]?\s*/i, "")
-    if (/^(?:hor[aá]rio(?:\s+de\s+trabalho)?|work\s*hours)\s*[:\-–]\s*/i.test(cleaned) &&
-            isPlausibleSchedule(withoutLabel)) { return withoutLabel }
-    if (isPlausibleSchedule(withoutLabel)) { return withoutLabel }
-    if (isPlausibleSchedule(cleaned)) { return cleaned }
+    if (!cleaned || cleaned.length > 180) {
+      return ""
+    }
+    if (
+      /^hor[aá]rio\s+(?:comercial|flex[ií]vel|vari[aá]vel|a\s+combinar)\b/i.test(cleaned) &&
+      isPlausibleSchedule(cleaned)
+    ) {
+      return cleaned
+    }
+    const withoutLabel = cleaned.replace(
+      /^(?:hor[aá]rio(?:\s+de\s+trabalho)?(?:\s*\/\s*turno)?|turno|jornada|work\s*hours)\s*[:\-–]?\s*/i,
+      ""
+    )
+    if (
+      /^(?:hor[aá]rio(?:\s+de\s+trabalho)?|work\s*hours)\s*[:\-–]\s*/i.test(cleaned) &&
+      isPlausibleSchedule(withoutLabel)
+    ) {
+      return withoutLabel
+    }
+    if (isPlausibleSchedule(withoutLabel)) {
+      return withoutLabel
+    }
+    if (isPlausibleSchedule(cleaned)) {
+      return cleaned
+    }
     return ""
   }
 
@@ -294,35 +435,57 @@
 
   function cleanSectionText (value) {
     return (value || "")
-      .replace(/\b(?:candidate-se|candidatar-se|inscreva-se|aplique agora|apply now|veja mais vagas|criar conta|entrar na sua conta|faça login|faca login|cadastre-se|login|register|sign in|sign up)\b[\s\S]*$/i, "")
+      .replace(
+        /\b(?:candidate-se|candidatar-se|inscreva-se|aplique agora|apply now|veja mais vagas|criar conta|entrar na sua conta|faça login|faca login|cadastre-se|login|register|sign in|sign up)\b[\s\S]*$/i,
+        ""
+      )
       .replace(/[\s,;:|•–—-]+$/g, "")
       .replace(/\s+(?:e|ou|de|da|do|das|dos|para|com|por|que|a|o|as|os)$/i, "")
       .trim()
   }
 
   function cleanBenefitsText (value) {
-    return cleanSectionText((value || "").split(/\r?\n/)
-      .map(function (line) { return line.trim() })
-      .filter(function (line) { return line && !/:\s*$/.test(line) })
-      .join("; "))
+    return cleanSectionText(
+      (value || "")
+        .split(/\r?\n/)
+        .map(function (line) {
+          return line.trim()
+        })
+        .filter(function (line) {
+          return line && !/:\s*$/.test(line)
+        })
+        .join("; ")
+    )
   }
 
   function removeDuplicateRequirementText (requirements, activities, benefits) {
     function normalize (value) {
-      return (value || "").toLocaleLowerCase("pt-BR").normalize("NFD")
+      return (value || "")
+        .toLocaleLowerCase("pt-BR")
+        .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, " ").trim()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
     }
     const existing = [normalize(activities), normalize(benefits)].filter(Boolean)
-    if (!normalize(requirements) || existing.indexOf(normalize(requirements)) !== -1) { return "" }
-    return (requirements || "").split(/[;\n]+/)
-      .map(function (part) { return part.trim() })
-      .filter(function (part) { return part && existing.indexOf(normalize(part)) === -1 })
+    if (!normalize(requirements) || existing.indexOf(normalize(requirements)) !== -1) {
+      return ""
+    }
+    return (requirements || "")
+      .split(/[;\n]+/)
+      .map(function (part) {
+        return part.trim()
+      })
+      .filter(function (part) {
+        return part && existing.indexOf(normalize(part)) === -1
+      })
       .join("; ")
   }
 
   function isSectionBoundary (line) {
-    return /^(?:como se candidatar|candidate-se|candidatar-se|inscreva-se|aplique agora|apply now|sobre a empresa|etapas do processo|mais informa[cç][oõ]es|cadastre-se|fa[cç]a login|entrar na sua conta)\b/i.test(line)
+    return /^(?:como se candidatar|candidate-se|candidatar-se|inscreva-se|aplique agora|apply now|sobre a empresa|etapas do processo|mais informa[cç][oõ]es|cadastre-se|fa[cç]a login|entrar na sua conta)\b/i.test(
+      line
+    )
   }
 
   function titleCase (value) {
@@ -363,15 +526,21 @@
       comercio: "comércio",
       servicos: "serviços"
     }
-    return value.toLocaleLowerCase("pt-BR").split(" ").map(function (word, index) {
-      if (spelling[word]) {
-        if (spelling[word] === spelling[word].toUpperCase()) { return spelling[word] }
-        return spelling[word].charAt(0).toLocaleUpperCase("pt-BR") + spelling[word].slice(1)
-      }
-      return index > 0 && smallWords.indexOf(word) !== -1
-        ? word
-        : word.charAt(0).toLocaleUpperCase("pt-BR") + word.slice(1)
-    }).join(" ")
+    return value
+      .toLocaleLowerCase("pt-BR")
+      .split(" ")
+      .map(function (word, index) {
+        if (spelling[word]) {
+          if (spelling[word] === spelling[word].toUpperCase()) {
+            return spelling[word]
+          }
+          return spelling[word].charAt(0).toLocaleUpperCase("pt-BR") + spelling[word].slice(1)
+        }
+        return index > 0 && smallWords.indexOf(word) !== -1
+          ? word
+          : word.charAt(0).toLocaleUpperCase("pt-BR") + word.slice(1)
+      })
+      .join(" ")
   }
 
   function parseLinkDetails (link) {
@@ -379,56 +548,118 @@
     try {
       const parsed = new URL(link)
       const params = parsed.searchParams
-      const roleFromQuery = params.get("cargo") || params.get("title") || params.get("job") || params.get("role") || params.get("q") || params.get("query")
-      const cityFromQuery = params.get("cidade") || params.get("city") || params.get("location") || params.get("local")
+      const roleFromQuery =
+        params.get("cargo") ||
+        params.get("title") ||
+        params.get("job") ||
+        params.get("role") ||
+        params.get("q") ||
+        params.get("query")
+      const cityFromQuery =
+        params.get("cidade") || params.get("city") || params.get("location") || params.get("local")
       if (roleFromQuery) {
         const queryRole = titleCase(readableSlug(roleFromQuery))
-        if (isPlausibleJobTitle(queryRole)) { result.role = queryRole }
+        if (isPlausibleJobTitle(queryRole)) {
+          result.role = queryRole
+        }
       }
       if (cityFromQuery && !isTokenLike(cityFromQuery)) {
         result.city = normalizeCityValue(readableSlug(cityFromQuery))
       }
 
-      const ignored = /^(?:vaga|vagas|emprego|empregos|job|jobs|career|careers|oportunidade|oportunidades|rs|br|p|reel|reels|stories|post|posts|share|company|companies|profile|search|view|viewjob|search-results)$/i
-      let segments = parsed.pathname.split("/").filter(Boolean).filter(function (segment) {
-        return !/^\d+$/.test(segment) && !isTokenLike(segment) && !ignored.test(readableSlug(segment))
-      })
-      if (/(\.|^)instagram\.com$/i.test(parsed.hostname) &&
-              (segments.length === 1 || !segments.length || /^(?:[a-z0-9_-]+)$/i.test(segments[segments.length - 1]))) {
+      const ignored =
+        /^(?:vaga|vagas|emprego|empregos|job|jobs|career|careers|oportunidade|oportunidades|rs|br|p|reel|reels|stories|post|posts|share|company|companies|profile|search|view|viewjob|search-results)$/i
+      let segments = parsed.pathname
+        .split("/")
+        .filter(Boolean)
+        .filter(function (segment) {
+          return (
+            !/^\d+$/.test(segment) && !isTokenLike(segment) && !ignored.test(readableSlug(segment))
+          )
+        })
+      if (
+        /(\.|^)instagram\.com$/i.test(parsed.hostname) &&
+        (segments.length === 1 ||
+          !segments.length ||
+          /^(?:[a-z0-9_-]+)$/i.test(segments[segments.length - 1]))
+      ) {
         segments = []
       }
       const slug = readableSlug(segments.join(" ")).replace(/([a-z])rs$/i, "$1 rs")
       let words = slug ? slug.split(" ") : []
       const cities = [
-        "caxias do sul", "porto alegre", "santa maria", "novo hamburgo",
-        "sao leopoldo", "rio grande", "passo fundo", "bento goncalves",
-        "santa cruz do sul", "cachoeirinha", "alvorada", "gravatai",
-        "canoas", "pelotas", "erechim", "lajeado", "ijui", "bage",
-        "farroupilha", "sapiranga", "esteio", "santa rosa", "uruguaiana",
-        "cruz alta", "carazinho", "vacaria", "tramandai", "torres",
-        "sao borja", "venancio aires", "guaiba", "estancia velha",
-        "campo bom", "taquara", "cachoeira do sul", "santo angelo",
-        "frederico westphalen", "sao jose do norte", "sao gabriel",
-        "tres passos", "marau", "capao da canoa", "charqueadas"
+        "caxias do sul",
+        "porto alegre",
+        "santa maria",
+        "novo hamburgo",
+        "sao leopoldo",
+        "rio grande",
+        "passo fundo",
+        "bento goncalves",
+        "santa cruz do sul",
+        "cachoeirinha",
+        "alvorada",
+        "gravatai",
+        "canoas",
+        "pelotas",
+        "erechim",
+        "lajeado",
+        "ijui",
+        "bage",
+        "farroupilha",
+        "sapiranga",
+        "esteio",
+        "santa rosa",
+        "uruguaiana",
+        "cruz alta",
+        "carazinho",
+        "vacaria",
+        "tramandai",
+        "torres",
+        "sao borja",
+        "venancio aires",
+        "guaiba",
+        "estancia velha",
+        "campo bom",
+        "taquara",
+        "cachoeira do sul",
+        "santo angelo",
+        "frederico westphalen",
+        "sao jose do norte",
+        "sao gabriel",
+        "tres passos",
+        "marau",
+        "capao da canoa",
+        "charqueadas"
       ]
 
       if (!result.city && words.length) {
         const cityInSlug = findCityInText(slug)
         if (cityInSlug) {
           result.city = cityInSlug
-          const citySlugToRemove = readableSlug(cityInSlug).toLocaleLowerCase("pt-BR").replace(/\s+(?:go|rs)$/, "")
+          const citySlugToRemove = readableSlug(cityInSlug)
+            .toLocaleLowerCase("pt-BR")
+            .replace(/\s+(?:go|rs)$/, "")
           const cityPosition = slug.toLocaleLowerCase("pt-BR").lastIndexOf(citySlugToRemove)
-          if (cityPosition >= 0) { words = readableSlug(slug.slice(0, cityPosition)).split(" ").filter(Boolean) }
+          if (cityPosition >= 0) {
+            words = readableSlug(slug.slice(0, cityPosition)).split(" ").filter(Boolean)
+          }
         }
       }
 
       if (result.city && words.length && !result.role) {
-        const citySlug = readableSlug(result.city).toLocaleLowerCase("pt-BR").replace(/\s+rs$/, "")
+        const citySlug = readableSlug(result.city)
+          .toLocaleLowerCase("pt-BR")
+          .replace(/\s+rs$/, "")
         const pathWords = words.slice()
-        if (pathWords[pathWords.length - 1].toLocaleLowerCase("pt-BR") === "rs") { pathWords.pop() }
+        if (pathWords[pathWords.length - 1].toLocaleLowerCase("pt-BR") === "rs") {
+          pathWords.pop()
+        }
         const pathSlug = pathWords.join(" ").toLocaleLowerCase("pt-BR")
         if (citySlug && pathSlug.endsWith(citySlug)) {
-          words = readableSlug(pathSlug.slice(0, pathSlug.length - citySlug.length)).split(" ").filter(Boolean)
+          words = readableSlug(pathSlug.slice(0, pathSlug.length - citySlug.length))
+            .split(" ")
+            .filter(Boolean)
         }
       }
 
@@ -440,7 +671,10 @@
             break
           }
         }
-        const locationWords = words.slice(0, rsIndex > 0 ? rsIndex : words.length).join(" ").toLocaleLowerCase("pt-BR")
+        const locationWords = words
+          .slice(0, rsIndex > 0 ? rsIndex : words.length)
+          .join(" ")
+          .toLocaleLowerCase("pt-BR")
         for (let c = 0; c < cities.length; c++) {
           if (locationWords.endsWith(cities[c])) {
             const cityAt = locationWords.length - cities[c].length
@@ -468,11 +702,17 @@
       }
 
       if (!result.role && words.length) {
-        while (/^(?:vaga|vagas|emprego|empregos|job|jobs|career|careers|oportunidade|oportunidades|de)$/i.test(words[0])) {
+        while (
+          /^(?:vaga|vagas|emprego|empregos|job|jobs|career|careers|oportunidade|oportunidades|de)$/i.test(
+            words[0]
+          )
+        ) {
           words.shift()
         }
         const pathRole = titleCase(words.join(" "))
-        if (isPlausibleJobTitle(pathRole)) { result.role = pathRole }
+        if (isPlausibleJobTitle(pathRole)) {
+          result.role = pathRole
+        }
       }
     } catch (error) {
       return result
@@ -481,7 +721,9 @@
   }
 
   function addFilled (filled, field) {
-    if (!filled) { return }
+    if (!filled) {
+      return
+    }
     const label = {
       company: "Empresa",
       role: "Cargo",
@@ -494,24 +736,35 @@
       benefits: "Benefícios",
       requirements: "Requisitos"
     }[field]
-    if (label && filled.indexOf(label) === -1) { filled.push(label) }
+    if (label && filled.indexOf(label) === -1) {
+      filled.push(label)
+    }
   }
 
   function setTrackedValue (field, value, filled) {
-    if (setAutoValue(field, value)) { addFilled(filled, field) }
+    if (setAutoValue(field, value)) {
+      addFilled(filled, field)
+    }
   }
 
   function setFallbackValue (field, value, filled) {
     const input = editableFields[field]
-    if (!input || manualFields[field]) { return }
+    if (!input || manualFields[field]) {
+      return
+    }
     const current = input.value.trim()
-    if (!current || current === defaultFieldValues[field]) { setTrackedValue(field, value, filled) }
+    if (!current || current === defaultFieldValues[field]) {
+      setTrackedValue(field, value, filled)
+    }
   }
 
   function clearAutoValues () {
     Object.keys(editableFields).forEach(function (field) {
-      if (!manualFields[field] && lastAutoValues[field] &&
-              editableFields[field].value.trim() === lastAutoValues[field]) {
+      if (
+        !manualFields[field] &&
+        lastAutoValues[field] &&
+        editableFields[field].value.trim() === lastAutoValues[field]
+      ) {
         editableFields[field].value = defaultFieldValues[field] || ""
         delete lastAutoValues[field]
       }
@@ -519,7 +772,9 @@
   }
 
   function fillFromLink (link, filled, onlyEmpty) {
-    if (!link) { return }
+    if (!link) {
+      return
+    }
     const details = parseLinkDetails(link)
     const setValue = onlyEmpty ? setFallbackValue : setTrackedValue
     setValue("role", details.role, filled)
@@ -534,16 +789,26 @@
     } catch (error) {
       source = source.replace(/%20/gi, " ")
     }
-    const exactSalary = source.match(/(?:a partir de\s+|sal[aá]rio(?:\s+de)?\s*)?R\$\s*[\d.]+(?:,\d{2})?(?:\s*(?:a|até|–|—|-)\s*(?:R\$\s*)?[\d.]+(?:,\d{2})?)?/i)
-    if (exactSalary) { return exactSalary[0].trim() }
+    const exactSalary = source.match(
+      /(?:a partir de\s+|sal[aá]rio(?:\s+de)?\s*)?R\$\s*[\d.]+(?:,\d{2})?(?:\s*(?:a|até|–|—|-)\s*(?:R\$\s*)?[\d.]+(?:,\d{2})?)?/i
+    )
+    if (exactSalary) {
+      return exactSalary[0].trim()
+    }
     source = source.replace(/[-_]+/g, " ")
     const phrase = source.match(/a\s+combinar|sal[aá]rio\s+compat[ií]vel(?:\s+com\s+o\s+mercado)?/i)
-    if (phrase) { return /^a\s+combinar$/i.test(phrase[0]) ? "A Combinar" : "Salário compatível" }
+    if (phrase) {
+      return /^a\s+combinar$/i.test(phrase[0]) ? "A Combinar" : "Salário compatível"
+    }
     const salaryPrefix = /\ba\s+partir\s+de\b/i.test(source) ? "A partir de " : ""
     const currency = source.match(/R\$\s*([\d.]+(?:,\d{2})?)/i)
-    if (currency) { return salaryPrefix + "R$ " + currency[1].replace(/[.,]+$/, "") }
+    if (currency) {
+      return salaryPrefix + "R$ " + currency[1].replace(/[.,]+$/, "")
+    }
     const formattedNumber = source.match(/\b\d{1,3}(?:\.\d{3})+,\d{2}\b/)
-    if (formattedNumber) { return salaryPrefix + "R$ " + formattedNumber[0] }
+    if (formattedNumber) {
+      return salaryPrefix + "R$ " + formattedNumber[0]
+    }
     const salaryAmount = source.match(/sal[aá]rio\s*(?:de|:)?\s*(\d{3,6}(?:,\d{2})?)/i)
     return salaryAmount ? salaryPrefix + "R$ " + salaryAmount[1] : ""
   }
@@ -554,11 +819,16 @@
     city: /^\s*(?:cidade|local|localidade|localiza[cç][aã]o)\s*[:\-–]?\s*(.*)$/i,
     model: /^\s*(?:modelo(?: de trabalho)?|modalidade)\s*[:\-–]?\s*(.*)$/i,
     salary: /^\s*(?:sal[aá]rio|faixa salarial|remunera[cç][aã]o)\s*[:\-–]?\s*(.*)$/i,
-    contractType: /^\s*(?:tipo(?:\s+de\s+(?:contrata[cç][aã]o|contrato))?|regime|contrata[cç][aã]o)\s*[:\-–]?\s*(.*)$/i,
-    schedule: /^\s*(?:hor[aá]rio(?:\s+de\s+trabalho)?(?:\s*\/\s*turno)?|turno|jornada|work\s*hours)\s*[:\-–]?\s*(.*)$/i,
-    activities: /^\s*(?:atividades|responsabilidades|o que vai fazer|principais atividades|descri[cç][aã]o da vaga|job description|responsibilities)\s*[:\-–]?\s*(.*)$/i,
-    benefits: /^\s*(?:benef[ií]cios?(?:(?:\s+(?:e\s+vantagens|que\s+fazem\s+a\s+diferen[cç]a))|(?:\s+[^:]{1,60}:))?|o que voc[eê] recebe|o que oferecemos|benefits|job\s*benefits)\s*[:\-–]?\s*(.*)$/i,
-    requirements: /^\s*(?:requisitos|pr[eé]-requisitos|qualifica[cç][oõ]es|o que precisa|o que buscamos|perfil(?:\s+desejado)?|perfil\s+[^:]{1,40}:|requirements|qualifications)\??\s*[:\-–]?\s*(.*)$/i
+    contractType:
+      /^\s*(?:tipo(?:\s+de\s+(?:contrata[cç][aã]o|contrato))?|regime|contrata[cç][aã]o)\s*[:\-–]?\s*(.*)$/i,
+    schedule:
+      /^\s*(?:hor[aá]rio(?:\s+de\s+trabalho)?(?:\s*\/\s*turno)?|turno|jornada|work\s*hours)\s*[:\-–]?\s*(.*)$/i,
+    activities:
+      /^\s*(?:atividades|responsabilidades|o que vai fazer|principais atividades|descri[cç][aã]o da vaga|job description|responsibilities)\s*[:\-–]?\s*(.*)$/i,
+    benefits:
+      /^\s*(?:benef[ií]cios?(?:(?:\s+(?:e\s+vantagens|que\s+fazem\s+a\s+diferen[cç]a))|(?:\s+[^:]{1,60}:))?|o que voc[eê] recebe|o que oferecemos|benefits|job\s*benefits)\s*[:\-–]?\s*(.*)$/i,
+    requirements:
+      /^\s*(?:requisitos|pr[eé]-requisitos|qualifica[cç][oõ]es|o que precisa|o que buscamos|perfil(?:\s+desejado)?|perfil\s+[^:]{1,40}:|requirements|qualifications)\??\s*[:\-–]?\s*(.*)$/i
   }
 
   function cleanPlainText (value) {
@@ -572,38 +842,58 @@
   }
 
   function extractLabeledSection (text, field) {
-    const lines = cleanPlainText(text).split("\n").map(function (line) {
-      return line.replace(/^\s*[•✔✅\-–—]+\s*/, "").trim()
-    })
+    const lines = cleanPlainText(text)
+      .split("\n")
+      .map(function (line) {
+        return line.replace(/^\s*[•✔✅\-–—]+\s*/, "").trim()
+      })
     const pattern = textFieldPatterns[field]
     for (let i = 0; i < lines.length; i++) {
       const match = lines[i].match(pattern)
-      if (!match) { continue }
+      if (!match) {
+        continue
+      }
       const values = match[1] ? [match[1].trim()] : []
       const multiLine = ["activities", "benefits", "requirements"].indexOf(field) !== -1
       if (!multiLine && values.length) {
         return field === "schedule" ? normalizeSchedule(lines[i]) : values[0]
       }
       for (let j = i + 1; j < lines.length; j++) {
-        if (isSectionBoundary(lines[j])) { break }
-        if (field === "benefits" && /:\s*$/.test(lines[j])) { continue }
+        if (isSectionBoundary(lines[j])) {
+          break
+        }
+        if (field === "benefits" && /:\s*$/.test(lines[j])) {
+          continue
+        }
         const sameField = lines[j].match(pattern)
         if (sameField) {
-          if (field === "schedule" && sameField[1]) { values.push(lines[j]) }
-          if (multiLine && field !== "schedule" && sameField[1] &&
-                  !(field === "benefits" && /:\s*$/.test(sameField[1]))) {
+          if (field === "schedule" && sameField[1]) {
+            values.push(lines[j])
+          }
+          if (
+            multiLine &&
+            field !== "schedule" &&
+            sameField[1] &&
+            !(field === "benefits" && /:\s*$/.test(sameField[1]))
+          ) {
             values.push(sameField[1].trim())
           }
-          if (multiLine && field !== "schedule") { continue }
+          if (multiLine && field !== "schedule") {
+            continue
+          }
           break
         }
         const nextSection = Object.keys(textFieldPatterns).some(function (key) {
           return textFieldPatterns[key].test(lines[j])
         })
-        if (nextSection) { break }
+        if (nextSection) {
+          break
+        }
         if (lines[j]) {
           values.push(lines[j])
-          if (!multiLine) { break }
+          if (!multiLine) {
+            break
+          }
         }
       }
       const section = cleanSectionText(values.filter(Boolean).join("; "))
@@ -616,26 +906,67 @@
 
   function findCityInText (text) {
     const cities = [
-      "aparecida de goiania", "goiania", "anapolis",
-      "caxias do sul", "porto alegre", "santa maria", "novo hamburgo", "sao leopoldo",
-      "rio grande", "passo fundo", "bento goncalves", "santa cruz do sul", "cachoeirinha",
-      "alvorada", "gravatai", "canoas", "pelotas", "erechim", "lajeado", "ijui", "bage",
-      "farroupilha", "sapiranga", "esteio", "santa rosa", "uruguaiana", "cruz alta",
-      "carazinho", "vacaria", "tramandai", "torres", "sao borja", "venancio aires",
-      "guaiba", "estancia velha", "campo bom", "taquara", "cachoeira do sul", "santo angelo",
-      "frederico westphalen", "sao jose do norte", "sao gabriel", "tres passos", "marau",
-      "capao da canoa", "charqueadas"
+      "aparecida de goiania",
+      "goiania",
+      "anapolis",
+      "caxias do sul",
+      "porto alegre",
+      "santa maria",
+      "novo hamburgo",
+      "sao leopoldo",
+      "rio grande",
+      "passo fundo",
+      "bento goncalves",
+      "santa cruz do sul",
+      "cachoeirinha",
+      "alvorada",
+      "gravatai",
+      "canoas",
+      "pelotas",
+      "erechim",
+      "lajeado",
+      "ijui",
+      "bage",
+      "farroupilha",
+      "sapiranga",
+      "esteio",
+      "santa rosa",
+      "uruguaiana",
+      "cruz alta",
+      "carazinho",
+      "vacaria",
+      "tramandai",
+      "torres",
+      "sao borja",
+      "venancio aires",
+      "guaiba",
+      "estancia velha",
+      "campo bom",
+      "taquara",
+      "cachoeira do sul",
+      "santo angelo",
+      "frederico westphalen",
+      "sao jose do norte",
+      "sao gabriel",
+      "tres passos",
+      "marau",
+      "capao da canoa",
+      "charqueadas"
     ]
-    const normalized = (text || "").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    const normalized = (text || "")
+      .toLocaleLowerCase("pt-BR")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
     for (let i = 0; i < cities.length; i++) {
       if (new RegExp("\\b" + cities[i].replace(/ /g, "\\s+") + "\\b").test(normalized)) {
-        const cityName = cities[i] === "goiania"
-          ? "Goiânia"
-          : cities[i] === "anapolis"
-            ? "Anápolis"
-            : cities[i] === "aparecida de goiania"
-              ? "Aparecida de Goiânia"
-              : titleCase(cities[i])
+        const cityName =
+          cities[i] === "goiania"
+            ? "Goiânia"
+            : cities[i] === "anapolis"
+              ? "Anápolis"
+              : cities[i] === "aparecida de goiania"
+                ? "Aparecida de Goiânia"
+                : titleCase(cities[i])
         return cityName + (i < 3 ? " - GO" : " - RS")
       }
     }
@@ -644,10 +975,17 @@
 
   function normalizeCityValue (value) {
     const city = (value || "").trim()
-    if (!city) { return "" }
+    if (!city) {
+      return ""
+    }
     const specific = findCityInText(city)
-    if (specific) { return specific }
-    const normalized = city.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    if (specific) {
+      return specific
+    }
+    const normalized = city
+      .toLocaleLowerCase("pt-BR")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
     const states = {
       go: "GO",
       goias: "GO",
@@ -712,56 +1050,126 @@
   }
 
   function isStateOnlyLocation (value) {
-    const normalized = (value || "").trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    return /^(?:goias(?:\s*-\s*go)?|go|rio grande do sul(?:\s*-\s*rs)?|rs|sao paulo(?:\s*-\s*sp)?|sp|rio de janeiro(?:\s*-\s*rj)?|rj|minas gerais(?:\s*-\s*mg)?|mg|distrito federal(?:\s*-\s*df)?|df)$/.test(normalized)
+    const normalized = (value || "")
+      .trim()
+      .toLocaleLowerCase("pt-BR")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+    return /^(?:goias(?:\s*-\s*go)?|go|rio grande do sul(?:\s*-\s*rs)?|rs|sao paulo(?:\s*-\s*sp)?|sp|rio de janeiro(?:\s*-\s*rj)?|rj|minas gerais(?:\s*-\s*mg)?|mg|distrito federal(?:\s*-\s*df)?|df)$/.test(
+      normalized
+    )
   }
 
   function normalizeContractType (value) {
     const type = (value || "").toLocaleLowerCase("pt-BR")
-    if (/tempor/.test(type)) { return "Temporário" }
-    if (/est[aá]gio|internship/.test(type)) { return "Estágio" }
-    if (/aut[oô]nom[oa]|self.?employed|freelancer/.test(type)) { return "Autônomo" }
-    if (/\bpj\b/.test(type)) { return "PJ" }
-    if (/diarista/.test(type)) { return "Diarista" }
-    if (/full.?time/.test(type)) { return "Tempo integral" }
-    if (/part.?time/.test(type)) { return "Meio período" }
-    if (/contractor/.test(type)) { return "Contrato" }
-    if (/volunteer/.test(type)) { return "Voluntário" }
-    if (/clt|efetivo/.test(type)) { return "CLT (Efetivo)" }
-    if (/a combinar|unspecified/.test(type)) { return "A combinar" }
+    if (/tempor/.test(type)) {
+      return "Temporário"
+    }
+    if (/est[aá]gio|internship/.test(type)) {
+      return "Estágio"
+    }
+    if (/aut[oô]nom[oa]|self.?employed|freelancer/.test(type)) {
+      return "Autônomo"
+    }
+    if (/\bpj\b/.test(type)) {
+      return "PJ"
+    }
+    if (/diarista/.test(type)) {
+      return "Diarista"
+    }
+    if (/full.?time/.test(type)) {
+      return "Tempo integral"
+    }
+    if (/part.?time/.test(type)) {
+      return "Meio período"
+    }
+    if (/contractor/.test(type)) {
+      return "Contrato"
+    }
+    if (/volunteer/.test(type)) {
+      return "Voluntário"
+    }
+    if (/clt|efetivo/.test(type)) {
+      return "CLT (Efetivo)"
+    }
+    if (/a combinar|unspecified/.test(type)) {
+      return "A combinar"
+    }
     return ""
   }
 
   function applyTextDetails (text, filled, onlyEmpty) {
-    if (!text) { return }
-    const fields = ["role", "company", "city", "model", "salary", "contractType", "schedule", "activities", "benefits", "requirements"]
+    if (!text) {
+      return
+    }
+    const fields = [
+      "role",
+      "company",
+      "city",
+      "model",
+      "salary",
+      "contractType",
+      "schedule",
+      "activities",
+      "benefits",
+      "requirements"
+    ]
     const details = {}
-    fields.forEach(function (field) { details[field] = extractLabeledSection(text, field) })
+    fields.forEach(function (field) {
+      details[field] = extractLabeledSection(text, field)
+    })
     details.benefits = cleanBenefitsText(details.benefits)
-    details.requirements = removeDuplicateRequirementText(details.requirements, details.activities, details.benefits)
+    details.requirements = removeDuplicateRequirementText(
+      details.requirements,
+      details.activities,
+      details.benefits
+    )
     const cityInText = findCityInText(text)
-    if (cityInText && (!details.city || isStateOnlyLocation(details.city))) { details.city = cityInText } else { details.city = normalizeCityValue(details.city) }
-    if (!details.salary) { details.salary = extractSalary(text) }
-    if (!details.contractType) { details.contractType = normalizeContractType(text) } else { details.contractType = normalizeContractType(details.contractType) || details.contractType }
+    if (cityInText && (!details.city || isStateOnlyLocation(details.city))) {
+      details.city = cityInText
+    } else {
+      details.city = normalizeCityValue(details.city)
+    }
+    if (!details.salary) {
+      details.salary = extractSalary(text)
+    }
+    if (!details.contractType) {
+      details.contractType = normalizeContractType(text)
+    } else {
+      details.contractType = normalizeContractType(details.contractType) || details.contractType
+    }
     if (!details.model) {
       const modelMatch = text.match(/\b(remoto|h[ií]brido|presencial)\b/i)
-      if (modelMatch) { details.model = titleCase(modelMatch[1]) }
+      if (modelMatch) {
+        details.model = titleCase(modelMatch[1])
+      }
     }
     if (!details.schedule) {
       const scheduleMatch = text.match(/(?:hor[aá]rio|turno|jornada)\s*[:-]?\s*([^.;\n]+)/i)
-      if (scheduleMatch) { details.schedule = normalizeSchedule(scheduleMatch[0].trim()) }
+      if (scheduleMatch) {
+        details.schedule = normalizeSchedule(scheduleMatch[0].trim())
+      }
     }
     Object.keys(details).forEach(function (field) {
-      if (onlyEmpty) { setFallbackValue(field, details[field], filled) } else { setTrackedValue(field, details[field], filled) }
+      if (onlyEmpty) {
+        setFallbackValue(field, details[field], filled)
+      } else {
+        setTrackedValue(field, details[field], filled)
+      }
     })
   }
 
   function isSensitiveLink (link) {
     try {
       const parsed = new URL(link)
-      return !isPublicWebLink(parsed) || Array.from(parsed.searchParams.keys()).some(function (key) {
-        return /^(?:token|access_token|api_key|key|auth|authorization|code|session|signature|secret|password)$/i.test(key)
-      })
+      return (
+        !isPublicWebLink(parsed) ||
+        Array.from(parsed.searchParams.keys()).some(function (key) {
+          return /^(?:token|access_token|api_key|key|auth|authorization|code|session|signature|secret|password)$/i.test(
+            key
+          )
+        })
+      )
     } catch (error) {
       return true
     }
@@ -771,21 +1179,35 @@
     parseTitle(data.title, filled)
     let apiCity = data.city
     if (isStateOnlyLocation(apiCity)) {
-      apiCity = findCityInText([data.title, data.activities, data.requirements].join(" ")) || apiCity
+      apiCity =
+        findCityInText([data.title, data.activities, data.requirements].join(" ")) || apiCity
     }
-    ["company", "city", "salary", "model", "contractType", "schedule", "activities", "benefits", "requirements"]
-      .forEach(function (field) {
-        setTrackedValue(field, field === "city" ? apiCity : data[field], filled)
-      })
+    ;[
+      "company",
+      "city",
+      "salary",
+      "model",
+      "contractType",
+      "schedule",
+      "activities",
+      "benefits",
+      "requirements"
+    ].forEach(function (field) {
+      setTrackedValue(field, field === "city" ? apiCity : data[field], filled)
+    })
     if (typeof data.descriptionText === "string") {
       applyTextDetails(data.descriptionText, filled, true)
     }
   }
 
   document.getElementById("new-job").addEventListener("click", function () {
-    if (!window.confirm("Tem certeza que quer limpar tudo e começar uma nova vaga?")) { return }
+    if (!window.confirm("Tem certeza que quer limpar tudo e começar uma nova vaga?")) {
+      return
+    }
     linkInput.value = ""
-    Object.keys(editableFields).forEach(function (field) { editableFields[field].value = "" })
+    Object.keys(editableFields).forEach(function (field) {
+      editableFields[field].value = ""
+    })
     manualFields = {}
     lastAutoValues = {}
     instagramCaptionOutput.value = ""
@@ -796,7 +1218,9 @@
     instagramStatus.textContent = ""
     whatsappStatus.textContent = ""
     imageStatus.textContent = ""
-    if (imageUrl) { URL.revokeObjectURL(imageUrl) }
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl)
+    }
     imageUrl = ""
     generatedImageBlob = null
     preview.removeAttribute("src")
@@ -842,7 +1266,9 @@
       })
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data && data.error ? data.error : "O servidor não conseguiu ler este portal.")
+        throw new Error(
+          data && data.error ? data.error : "O servidor não conseguiu ler este portal."
+        )
       }
       if (typeof data.finalUrl === "string" && /^https?:\/\//i.test(data.finalUrl)) {
         resolvedLink = data.finalUrl
@@ -877,32 +1303,50 @@
     }
     Object.keys(editableFields).forEach(function (field) {
       const value = editableFields[field].value.trim()
-      if (!value || value === defaultFieldValues[field]) { review.push(labels[field]) }
+      if (!value || value === defaultFieldValues[field]) {
+        review.push(labels[field])
+      }
     })
     let status
     if (!roleAvailable) {
-      status = "Não foi possível extrair automaticamente os dados do link. Complete ou ajuste os campos manualmente antes de gerar o post e a imagem."
+      status =
+        "Não foi possível extrair automaticamente os dados do link. Complete ou ajuste os campos manualmente antes de gerar o post e a imagem."
     } else if (errors.length) {
-      status = "O portal bloqueou a leitura ou o servidor não conseguiu acessá-lo. Cargo identificado pela URL; complete ou ajuste os demais campos manualmente antes de gerar o post e a imagem."
+      status =
+        "O portal bloqueou a leitura ou o servidor não conseguiu acessá-lo. Cargo identificado pela URL; complete ou ajuste os demais campos manualmente antes de gerar o post e a imagem."
     } else {
-      status = filled.length ? "Dados preenchidos: " + filled.join(", ") + ". " : "Confira os dados encontrados. "
-      status += review.length ? "Confira ou complete: " + review.join(", ") + "." : "Confira os dados antes de gerar o post e a imagem."
+      status = filled.length
+        ? "Dados preenchidos: " + filled.join(", ") + ". "
+        : "Confira os dados encontrados. "
+      status += review.length
+        ? "Confira ou complete: " + review.join(", ") + "."
+        : "Confira os dados antes de gerar o post e a imagem."
     }
-    if (errors.length) { status += " Detalhe: " + errors.join("; ") + "." }
+    if (errors.length) {
+      status += " Detalhe: " + errors.join("; ") + "."
+    }
     fetchStatus.textContent = status
   })
   function summarizeItems (text, limit, maxLength) {
     const source = (text || "").trim()
-    if (!source) { return ["A consultar"] }
+    if (!source) {
+      return ["A consultar"]
+    }
     const items = source
       .replace(/[•;]/g, "\n")
       .replace(/[.!?]\s+/g, "\n")
       .split(/[\n,]+/)
-      .map(function (item) { return item.replace(/^[\s\-–—✔✅]+|[\s]+$/g, "").trim() })
+      .map(function (item) {
+        return item.replace(/^[\s\-–—✔✅]+|[\s]+$/g, "").trim()
+      })
       .filter(Boolean)
-    if (!items.length) { return ["A consultar"] }
+    if (!items.length) {
+      return ["A consultar"]
+    }
     return items.slice(0, limit).map(function (item) {
-      if (item.length <= maxLength) { return item }
+      if (item.length <= maxLength) {
+        return item
+      }
       const shortened = item.slice(0, maxLength - 1)
       const lastSpace = shortened.lastIndexOf(" ")
       return (lastSpace > 0 ? shortened.slice(0, lastSpace) : shortened) + "…"
@@ -917,8 +1361,12 @@
     whatsappPanel.hidden = showInstagram
   }
 
-  instagramTab.addEventListener("click", function () { setOutputTab("instagram") })
-  whatsappTab.addEventListener("click", function () { setOutputTab("whatsapp") })
+  instagramTab.addEventListener("click", function () {
+    setOutputTab("instagram")
+  })
+  whatsappTab.addEventListener("click", function () {
+    setOutputTab("whatsapp")
+  })
 
   document.getElementById("generate-post").addEventListener("click", function () {
     const link = linkInput.value.trim()
@@ -942,20 +1390,33 @@
       "🕐 Horário: " + schedule,
       "",
       "O que você vai fazer:",
-      activities.map(function (item) { return "• " + item }).join("\n"),
+      activities
+        .map(function (item) {
+          return "• " + item
+        })
+        .join("\n"),
       "",
       "Requisitos:",
-      requirements.map(function (item) { return "✔ " + item }).join("\n"),
+      requirements
+        .map(function (item) {
+          return "✔ " + item
+        })
+        .join("\n"),
       "",
       "Benefícios:",
-      benefits.map(function (item) { return "✔ " + item }).join("\n"),
+      benefits
+        .map(function (item) {
+          return "✔ " + item
+        })
+        .join("\n"),
       "",
       "📣 Comente EU QUERO / Link na bio",
       "🔗 Link na bio para se candidatar",
       "#vagas #caxiasdosul #vagasrs",
       "📌 Vagas todos os dias no meu Canal do WhatsApp - Link na bio"
     ]
-    instagramCaptionOutput.value = instagramLines.join("\n")
+    instagramCaptionOutput.value = instagramLines
+      .join("\n")
       .replace(/\b(?:https?:\/\/|www\.)\S+/gi, "")
       .replace(/[ \t]+\n/g, "\n")
       .replace(/\n{3,}/g, "\n\n")
@@ -967,7 +1428,9 @@
       "📋 " + contractType,
       "🕐 Horário: " + schedule
     ]
-    whatsappLines.push("✅ Requisitos: " + summarizeItems(requirementsInput.value, 3, 55).join("; "))
+    whatsappLines.push(
+      "✅ Requisitos: " + summarizeItems(requirementsInput.value, 3, 55).join("; ")
+    )
     whatsappLines.push("🎁 Benefícios: " + summarizeItems(benefitsInput.value, 4, 55).join("; "))
     whatsappLines.push("👉 Interessados: Comente EU QUERO ou chame no direct")
     whatsappLines.push("@suavagars")
@@ -1012,7 +1475,11 @@
       })
       const listResult = await listResponse.json()
       if (!listResponse.ok) {
-        throw new Error(listResult && listResult.error ? listResult.error : "Não foi possível verificar as vagas já publicadas.")
+        throw new Error(
+          listResult && listResult.error
+            ? listResult.error
+            : "Não foi possível verificar as vagas já publicadas."
+        )
       }
       if (!listResult || !Array.isArray(listResult.vagas)) {
         throw new Error("A lista de vagas retornou um formato inválido.")
@@ -1021,9 +1488,11 @@
       const normalizedCompany = normalizeDuplicateValue(vacancy.company)
       const normalizedRole = normalizeDuplicateValue(vacancy.role)
       const duplicate = listResult.vagas.find(function (existing) {
-        return existing &&
-              normalizeDuplicateValue(existing.company) === normalizedCompany &&
-              normalizeDuplicateValue(existing.role) === normalizedRole
+        return (
+          existing &&
+          normalizeDuplicateValue(existing.company) === normalizedCompany &&
+          normalizeDuplicateValue(existing.role) === normalizedRole
+        )
       })
       if (duplicate) {
         const confirmed = await confirmDuplicateVacancy(duplicate)
@@ -1044,7 +1513,9 @@
         body: JSON.stringify(vacancy)
       })
       const result = await response.json()
-      if (!response.ok) { throw new Error(result && result.error ? result.error : "Não foi possível salvar a vaga.") }
+      if (!response.ok) {
+        throw new Error(result && result.error ? result.error : "Não foi possível salvar a vaga.")
+      }
       gestorStatus.textContent = "✅ Vaga publicada no site e registrada no gestor!"
     } catch (error) {
       gestorStatus.textContent = error.message || "Não foi possível publicar a vaga."
@@ -1082,7 +1553,11 @@
   })
 
   document.getElementById("share-whatsapp").addEventListener("click", function () {
-    window.open("https://whatsapp.com/channel/0029VbEAoWKHwXb8eaOKcQ2p", "_blank", "noopener,noreferrer")
+    window.open(
+      "https://whatsapp.com/channel/0029VbEAoWKHwXb8eaOKcQ2p",
+      "_blank",
+      "noopener,noreferrer"
+    )
   })
 
   document.getElementById("visit-instagram").addEventListener("click", function () {
@@ -1117,7 +1592,9 @@
         line = candidate
       }
     })
-    if (line) { lines.push(line) }
+    if (line) {
+      lines.push(line)
+    }
     return lines
   }
 
@@ -1146,7 +1623,8 @@
 
     const logo = document.querySelector("header img")
     if (!logo.complete || !logo.naturalWidth) {
-      imageStatus.textContent = "Não foi possível carregar logo.png. Confira se o arquivo está na mesma pasta do index.html."
+      imageStatus.textContent =
+        "Não foi possível carregar logo.png. Confira se o arquivo está na mesma pasta do index.html."
       return
     }
 
@@ -1176,11 +1654,16 @@
     while (roleFontSize >= 34) {
       context.font = "700 " + roleFontSize + "px Arial, Helvetica, sans-serif"
       roleLines = getWrappedLines(context, upperRole, roleMaxWidth)
-      if (roleLines.length <= 2) { break }
+      if (roleLines.length <= 2) {
+        break
+      }
       roleFontSize -= 4
     }
     if (roleLines.length > 2) {
-      roleLines = [roleLines[0], fitLineWithEllipsis(context, roleLines.slice(1).join(" "), roleMaxWidth)]
+      roleLines = [
+        roleLines[0],
+        fitLineWithEllipsis(context, roleLines.slice(1).join(" "), roleMaxWidth)
+      ]
     }
     const roleLineHeight = roleFontSize * 1.12
     const roleTop = logoY + logoHeight + 20
@@ -1201,7 +1684,10 @@
       companyLines = getWrappedLines(context, companyCity, companyMaxWidth)
     }
     if (companyLines.length > 2) {
-      companyLines = [companyLines[0], fitLineWithEllipsis(context, companyLines.slice(1).join(" "), companyMaxWidth)]
+      companyLines = [
+        companyLines[0],
+        fitLineWithEllipsis(context, companyLines.slice(1).join(" "), companyMaxWidth)
+      ]
     }
     const companyTop = roleTop + roleLines.length * roleLineHeight + 28
     const companyLineHeight = companyFontSize * 1.35
@@ -1223,7 +1709,13 @@
       infoLines = infoGroups.map(function (item) {
         return getWrappedLines(context, item, infoMaxWidth)
       })
-      if (infoLines.every(function (lines) { return lines.length <= 2 })) { break }
+      if (
+        infoLines.every(function (lines) {
+          return lines.length <= 2
+        })
+      ) {
+        break
+      }
       infoFontSize -= 2
     }
     context.fillStyle = "#31516d"
@@ -1255,7 +1747,9 @@
     context.font = "700 34px Arial, Helvetica, sans-serif"
     context.fillText("@suavagars", 540, 970)
 
-    if (imageUrl) { URL.revokeObjectURL(imageUrl) }
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl)
+    }
     canvas.toBlob(function (blob) {
       const button = document.getElementById("generate-image")
       const spinner = document.getElementById("image-spinner")
@@ -1284,12 +1778,15 @@
 
     const copyButton = document.getElementById("btnCopiarImagem")
     const shareButton = document.getElementById("btnCompartilharImagem")
-    const ClipboardItemConstructor = window.ClipboardItem ||
-          (typeof ClipboardItem !== "undefined" ? ClipboardItem : null)
+    const ClipboardItemConstructor =
+      window.ClipboardItem || (typeof ClipboardItem !== "undefined" ? ClipboardItem : null)
     copyButton.disabled = true
     try {
-      if (!navigator.clipboard || typeof navigator.clipboard.write !== "function" ||
-              !ClipboardItemConstructor) {
+      if (
+        !navigator.clipboard ||
+        typeof navigator.clipboard.write !== "function" ||
+        !ClipboardItemConstructor
+      ) {
         throw new Error("Este navegador não permite copiar imagens diretamente.")
       }
       await navigator.clipboard.write([
@@ -1299,7 +1796,8 @@
       imageStatus.textContent = "✅ Imagem copiada! Agora abra o Instagram e cole direto no post."
     } catch (error) {
       shareButton.hidden = false
-      imageStatus.textContent = "Não foi possível copiar a imagem. Use COMPARTILHAR IMAGEM ou BAIXAR IMAGEM."
+      imageStatus.textContent =
+        "Não foi possível copiar a imagem. Use COMPARTILHAR IMAGEM ou BAIXAR IMAGEM."
     } finally {
       copyButton.disabled = !generatedImageBlob
     }
@@ -1311,13 +1809,15 @@
       return
     }
     if (typeof navigator.share !== "function" || typeof File === "undefined") {
-      imageStatus.textContent = "Este navegador não permite compartilhar arquivos. Use BAIXAR IMAGEM."
+      imageStatus.textContent =
+        "Este navegador não permite compartilhar arquivos. Use BAIXAR IMAGEM."
       return
     }
 
     const imageFile = new File([generatedImageBlob], "sua-vaga-rs.png", { type: "image/png" })
     if (typeof navigator.canShare === "function" && !navigator.canShare({ files: [imageFile] })) {
-      imageStatus.textContent = "Este navegador não permite compartilhar arquivos. Use BAIXAR IMAGEM."
+      imageStatus.textContent =
+        "Este navegador não permite compartilhar arquivos. Use BAIXAR IMAGEM."
       return
     }
     try {
@@ -1328,14 +1828,17 @@
       })
       imageStatus.textContent = "Imagem compartilhada."
     } catch (error) {
-      imageStatus.textContent = error && error.name === "AbortError"
-        ? "Compartilhamento cancelado."
-        : "Não foi possível compartilhar a imagem. Use BAIXAR IMAGEM."
+      imageStatus.textContent =
+        error && error.name === "AbortError"
+          ? "Compartilhamento cancelado."
+          : "Não foi possível compartilhar a imagem. Use BAIXAR IMAGEM."
     }
   })
 
   document.getElementById("download-image").addEventListener("click", function () {
-    if (!imageUrl) { return }
+    if (!imageUrl) {
+      return
+    }
     const download = document.createElement("a")
     download.href = imageUrl
     download.download = "sua-vaga-rs.png"
@@ -1343,12 +1846,4 @@
     download.click()
     download.remove()
   })
-}())
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/sw.js").catch(function (error) {
-      console.error("Service worker registration failed:", error)
-    })
-  })
-}
+})()

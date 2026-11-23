@@ -2,18 +2,33 @@
   "outputDirectory": ".",
   "redirects": [
     {
+      "source": "/admin",
+      "destination": "/admin/",
+      "permanent": false
+    },
+    {
       "source": "/ferramenta",
-      "destination": "/ferramenta.html",
+      "destination": "/admin/",
+      "permanent": false
+    },
+    {
+      "source": "/ferramenta.html",
+      "destination": "/admin/",
+      "permanent": false
+    },
+    {
+      "source": "/gestor",
+      "destination": "/admin/",
+      "permanent": false
+    },
+    {
+      "source": "/gestor.html",
+      "destination": "/admin/",
       "permanent": false
     },
     {
       "source": "/vagas",
       "destination": "/vagas.html",
-      "permanent": false
-    },
-    {
-      "source": "/gestor",
-      "destination": "/gestor.html",
       "permanent": false
     }
   ],
@@ -21,14 +36,6 @@
     {
       "source": "/manifest.json",
       "destination": "/public/manifest.json"
-    },
-    {
-      "source": "/gestor-manifest.json",
-      "destination": "/public/gestor-manifest.json"
-    },
-    {
-      "source": "/ferramenta-manifest.json",
-      "destination": "/public/ferramenta-manifest.json"
     },
     {
       "source": "/sw.js",
@@ -45,20 +52,7 @@
   ],
   "headers": [
     {
-      "source": "/gestor.html",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "private, no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/ferramenta.html",
+      "source": "/admin/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

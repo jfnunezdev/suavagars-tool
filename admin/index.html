@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="theme-color" content="#0b1c3d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="PAINEL" />
+    <title>PAINEL - Sua Vaga RS</title>
+    <link rel="manifest" href="/admin/manifest.json" />
+    <link rel="apple-touch-icon" href="/admin/icon-192.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/admin/admin.css" />
+  </head>
+  <body class="admin-page">
+    <header class="manager-brand">
+      <img src="/logo.png" alt="" aria-hidden="true" />
+      <h1>PAINEL SUA VAGA</h1>
+      <p>Editor de posts e aprovação de vagas</p>
+    </header>
+
+    <p id="auth-status" class="manager-status" role="status" aria-live="polite">
+      Verificando acesso...
+    </p>
+
+    <section id="login-panel" class="card manager-login" aria-labelledby="login-title" hidden>
+      <h1 id="login-title">Entrar no painel</h1>
+      <p class="intro">
+        Área privada do PAINEL SUA VAGA. Uma única senha para o editor e a aprovação.
+      </p>
+      <form id="login-form">
+        <div class="field">
+          <label for="manager-password">Senha do painel</label>
+          <div class="password-field">
+            <input id="manager-password" type="password" autocomplete="current-password" required />
+            <button
+              id="manager-password-toggle"
+              class="password-toggle"
+              type="button"
+              aria-label="Mostrar senha"
+              aria-pressed="false"
+            >
+              <svg
+                id="manager-password-eye"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg
+                id="manager-password-eye-off"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                hidden
+              >
+                <path d="M3 3l18 18"></path>
+                <path
+                  d="M10.6 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2"
+                ></path>
+                <path d="M6.2 6.2C3.6 8 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.4 4.5-1.1"></path>
+                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button id="login-button" type="submit" aria-busy="false">
+          <span class="spinner" id="login-spinner" hidden></span>ENTRAR
+        </button>
+      </form>
+      <p id="login-status" class="manager-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <div id="authenticated-app" hidden>
+      <nav id="admin-nav" class="app-nav" aria-label="Navegação do painel">
+        <button id="tab-editor" type="button" aria-current="page" aria-controls="view-editor">
+          EDITOR
+        </button>
+        <button
+          id="tab-aprovacao"
+          type="button"
+          aria-current="false"
+          aria-controls="view-aprovacao"
+        >
+          APROVAÇÃO
+        </button>
+        <button id="logout-button" class="secondary" type="button" aria-busy="false">
+          <span class="spinner" id="logout-spinner" hidden></span>SAIR
+        </button>
+      </nav>
+
+      <main id="view-editor" class="admin-view">
+        <header>
+          <h1>EDITOR DE POST</h1>
+          <p class="intro">Transforme o link da vaga em um post pronto para compartilhar.</p>
+        </header>
+
+        <section class="card" aria-labelledby="text-heading">
+          <h2 id="text-heading">Gerador de texto</h2>
+          <div class="field">
+            <label for="linkVaga">🔗 Cole o link da vaga para buscar os dados</label>
+            <input
+              id="linkVaga"
+              type="url"
+              inputmode="url"
+              placeholder="Cole o link da vaga e clique em “Buscar dados do link”"
+              autocomplete="url"
+            />
+          </div>
+          <button id="fetch-button" class="secondary" type="button" aria-busy="false">
+            <span class="spinner" id="fetch-spinner" hidden></span>Buscar dados do link
+          </button>
+          <p id="fetch-status" class="status" role="status" aria-live="polite"></p>
+
+          <div class="field">
+            <label for="company">Empresa</label>
+            <input
+              id="company"
+              type="text"
+              value="A consultar"
+              placeholder="Ex: Carrefour"
+              autocomplete="organization"
+            />
+          </div>
+          <div class="field">
+            <label for="role">Cargo</label>
+            <input id="role" type="text" placeholder="Ex: Operador de Caixa" />
+          </div>
+          <div class="field">
+            <label for="salary">Salário</label>
+            <input id="salary" type="text" value="A consultar" placeholder="Ex: R$ 2.500,00" />
+          </div>
+          <div class="field">
+            <label for="city">Cidade</label>
+            <input id="city" type="text" value="A consultar" autocomplete="address-level2" />
+          </div>
+          <div class="field">
+            <label for="model">Modelo</label>
+            <input
+              id="model"
+              type="text"
+              value="A consultar"
+              placeholder="Ex: Presencial, híbrido ou remoto"
+            />
+          </div>
+          <div class="field">
+            <label for="contract-type">Tipo de Contratação</label>
+            <select id="contract-type">
+              <option value="">Selecione...</option>
+              <option value="A consultar" selected>A consultar</option>
+              <option value="CLT (Efetivo)">CLT (Efetivo)</option>
+              <option value="Efetivo - CLT">Efetivo - CLT</option>
+              <option value="Temporário">Temporário</option>
+              <option value="Estágio">Estágio</option>
+              <option value="PJ">PJ</option>
+              <option value="Diarista">Diarista</option>
+              <option value="Tempo integral">Tempo integral</option>
+              <option value="Meio período">Meio período</option>
+              <option value="Contrato">Contrato</option>
+              <option value="Voluntário">Voluntário</option>
+              <option value="A combinar">A combinar</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="schedule">Horário / Turno</label>
+            <input id="schedule" type="text" value="A consultar" />
+          </div>
+          <div class="field">
+            <label for="activities">Atividades</label>
+            <textarea id="activities" placeholder="Atividades da vaga"></textarea>
+          </div>
+          <div class="field">
+            <label for="benefits">Benefícios</label>
+            <input id="benefits" type="text" placeholder="Opcional" />
+          </div>
+          <div class="field">
+            <label for="requirements">Requisitos</label>
+            <input id="requirements" type="text" placeholder="Opcional" />
+          </div>
+          <div class="button-row generate-actions">
+            <button id="generate-post" type="button" aria-busy="false">
+              <span class="spinner" id="generate-spinner" hidden></span>GERAR POST
+            </button>
+            <button id="new-job" class="clear-button" type="button">🔄 NOVA VAGA / LIMPAR</button>
+          </div>
+          <div class="button-row">
+            <button id="add-vaga-gestor" class="whatsapp" type="button" aria-busy="false">
+              <span class="spinner" id="publish-spinner" hidden></span>PUBLICAR
+            </button>
+          </div>
+          <p id="gestor-status" class="status" role="status" aria-live="polite"></p>
+          <p id="post-status" class="status" role="status" aria-live="polite"></p>
+          <dialog
+            id="duplicate-warning"
+            class="duplicate-warning"
+            aria-labelledby="duplicate-warning-title"
+            aria-describedby="duplicate-warning-message"
+          >
+            <h2 id="duplicate-warning-title">⚠️ ATENÇÃO! VAGA DUPLICADA</h2>
+            <p id="duplicate-warning-message" class="duplicate-warning-message"></p>
+            <div class="duplicate-warning-actions">
+              <button id="duplicate-cancel" class="clear-button" type="button">
+                ❌ Cancelar, não adicionar
+              </button>
+              <button id="duplicate-confirm" class="whatsapp" type="button">
+                ✅ Sim, adicionar mesmo assim
+              </button>
+            </div>
+          </dialog>
+
+          <div class="button-row two output-tabs" role="tablist" aria-label="Formato do post">
+            <button
+              id="tab-instagram"
+              class="secondary output-tab"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="instagram-panel"
+            >
+              INSTAGRAM
+            </button>
+            <button
+              id="tab-whatsapp"
+              class="secondary output-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="whatsapp-panel"
+            >
+              WHATSAPP
+            </button>
+          </div>
+
+          <section
+            id="instagram-panel"
+            class="output-panel"
+            role="tabpanel"
+            aria-labelledby="tab-instagram"
+          >
+            <section class="card" aria-labelledby="image-heading">
+              <h2 id="image-heading">Imagem para Instagram</h2>
+              <p class="intro">Gere a arte quadrada para acompanhar a legenda.</p>
+              <div class="button-row">
+                <button id="generate-image" type="button" aria-busy="false">
+                  <span class="spinner" id="image-spinner" hidden></span>GERAR IMAGEM PARA INSTAGRAM
+                </button>
+                <button id="download-image" class="secondary" type="button" disabled>
+                  BAIXAR IMAGEM
+                </button>
+                <button id="btnCopiarImagem" class="whatsapp" type="button" disabled>
+                  📋 COPIAR IMAGEM
+                </button>
+                <button id="btnCompartilharImagem" class="whatsapp" type="button" hidden>
+                  📤 COMPARTILHAR IMAGEM
+                </button>
+              </div>
+              <p id="image-status" class="status" role="status" aria-live="polite"></p>
+              <div id="preview-wrap" class="preview-wrap" hidden>
+                <img id="image-preview" alt="Prévia da imagem da vaga" />
+              </div>
+            </section>
+            <div class="field output-field">
+              <label for="instagram-caption">Legenda para Instagram</label>
+              <textarea
+                id="instagram-caption"
+                placeholder="A legenda aparecerá aqui."
+                readonly
+              ></textarea>
+            </div>
+            <button id="copy-instagram" class="secondary" type="button">COPIAR LEGENDA</button>
+            <p class="instagram-link-notice">
+              ⚠️ Lembre-se: atualize o link na sua bio com o link desta vaga antes de publicar.
+            </p>
+            <p id="instagram-status" class="status" role="status" aria-live="polite"></p>
+          </section>
+
+          <section
+            id="whatsapp-panel"
+            class="output-panel"
+            role="tabpanel"
+            aria-labelledby="tab-whatsapp"
+            hidden
+          >
+            <div class="field output-field">
+              <label for="whatsapp-post">Texto para WhatsApp</label>
+              <textarea
+                id="whatsapp-post"
+                placeholder="O texto aparecerá aqui."
+                readonly
+              ></textarea>
+            </div>
+            <div class="button-row two">
+              <button id="copy-whatsapp" class="secondary" type="button">COPIAR TEXTO</button>
+            </div>
+            <p id="whatsapp-status" class="status" role="status" aria-live="polite"></p>
+          </section>
+          <div class="button-row social-links-row">
+            <button id="visit-instagram" class="whatsapp" type="button">📸 IR MEU INSTAGRAM</button>
+            <button id="share-whatsapp" class="whatsapp" type="button">📢 CANAL DE WHATSAPP</button>
+          </div>
+        </section>
+      </main>
+
+      <main id="view-aprovacao" class="admin-view manager-page" hidden>
+        <section id="manager-panel">
+          <header class="manager-heading">
+            <div>
+              <h1>APROVAÇÃO DE VAGAS</h1>
+              <p class="intro">Revise as solicitações antes de publicar.</p>
+            </div>
+          </header>
+
+          <section class="manager-section" aria-labelledby="pending-title">
+            <h2 id="pending-title">
+              Solicitações Pendentes <span id="pending-count" class="manager-count">0</span>
+            </h2>
+            <p id="pending-status" class="manager-status" role="status" aria-live="polite"></p>
+            <div id="pending-list" class="manager-list"></div>
+          </section>
+
+          <section class="manager-section" aria-labelledby="published-title">
+            <h2 id="published-title">Vagas Publicadas</h2>
+            <p id="published-status" class="manager-status" role="status" aria-live="polite"></p>
+            <div id="published-list" class="manager-list"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <canvas id="post-canvas" width="1080" height="1080" hidden></canvas>
+
+    <script src="/admin/editor.js" defer></script>
+    <script src="/admin/aprovacao.js" defer></script>
+    <script src="/admin/auth.js" defer></script>
+    <script src="/admin/index.js" defer></script>
+  </body>
+</html>

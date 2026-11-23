@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node local-server.js",
     "test": "node --test",
-    "lint": "eslint api/ lib/ app.js local-server.js test/"
+    "lint": "eslint api/ lib/ admin/ local-server.js test/"
   },
   "devDependencies": {
     "eslint": "^8.57.1",

@@ -1,0 +1,154 @@
+.admin-page {
+  background: #eaf6ff;
+}
+
+.admin-page .manager-brand {
+  margin: -24px -16px 24px;
+  padding: 26px 18px 24px;
+  background: #0b1c3d;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(8, 24, 55, 0.2);
+}
+
+.admin-page .manager-brand h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(28px, 6vw, 42px);
+  letter-spacing: 1px;
+  line-height: 1.12;
+}
+.admin-page .manager-brand p {
+  margin: 7px 0 0;
+  color: #d7e3f7;
+  font-size: 16px;
+  font-weight: 700;
+}
+.admin-page .manager-brand img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+
+.app-nav button[aria-current="page"] {
+  border-color: #0b1c3d;
+  background: #0b1c3d;
+  color: #fff;
+}
+
+.app-nav button[aria-current="page"]:hover {
+  background: #17325c;
+}
+
+.manager-page {
+  width: min(100%, 900px);
+}
+.manager-login {
+  max-width: 440px;
+  margin: 9vh auto 0;
+}
+.manager-login h1 {
+  margin: 0;
+  color: var(--blue);
+}
+.manager-login .intro {
+  margin: 8px 0 20px;
+}
+.manager-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 22px;
+}
+.manager-heading h1 {
+  color: #0b1c3d;
+}
+.manager-heading .secondary {
+  width: auto;
+  min-width: 120px;
+}
+.manager-section {
+  margin: 24px 0;
+}
+.manager-section h2 {
+  margin-bottom: 10px;
+}
+.manager-list {
+  display: grid;
+  gap: 14px;
+}
+.manager-card {
+  margin: 0;
+}
+.manager-card h3 {
+  margin: 0 0 12px;
+  color: var(--blue);
+  font-size: 1.2rem;
+}
+.manager-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.manager-details div {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 9px;
+  background: #f3faff;
+}
+.manager-details dt {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.manager-details dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+.manager-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.manager-card-actions .reject-button {
+  background: #b3261e;
+}
+.manager-card-actions .reject-button:hover {
+  background: #8d1d17;
+}
+.manager-status {
+  min-height: 24px;
+  margin: 8px 0;
+  color: var(--muted);
+}
+.manager-count {
+  display: inline-flex;
+  min-width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: #f0ad24;
+  color: #382300;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .manager-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .manager-heading .secondary {
+    width: 100%;
+  }
+  .manager-details {
+    grid-template-columns: 1fr;
+  }
+  .manager-card-actions {
+    grid-template-columns: 1fr;
+  }
+}
