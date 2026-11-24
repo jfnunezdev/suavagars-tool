@@ -54,7 +54,7 @@ test("the two apps have distinct short names, icons and theme colors", function 
   assert.deepEqual(adminIcons, ["/admin/icon-192.png", "/admin/icon-512.png"])
   assert.ok(
     publicManifest.icons.every(function (icon) {
-      return icon.purpose === "any maskable"
+      return icon.purpose === "any"
     })
   )
   assert.ok(
@@ -72,7 +72,7 @@ test("the two apps have distinct short names, icons and theme colors", function 
 
 test("public service worker never serves private pages or uses stale query flags", function () {
   const source = readFile("public/sw.js")
-  assert.match(source, /svrs-public-v1/)
+  assert.match(source, /svrs-public-v2/)
   assert.match(source, /PRIVATE_PATHS/)
   assert.match(source, /\/admin/)
   assert.match(source, /\/ferramenta/)
@@ -84,9 +84,12 @@ test("public service worker never serves private pages or uses stale query flags
 
 test("admin service worker uses the /admin/ scope and never falls back to the public index", function () {
   const source = readFile("admin/sw.js")
-  assert.match(source, /svrs-admin-v1/)
+  assert.match(source, /svrs-admin-v2/)
   assert.match(source, /"\/admin\/"/)
   assert.match(source, /caches\.match\("\/admin\/index\.html"\)/)
+  assert.match(source, /addEventListener\("push"/)
+  assert.match(source, /addEventListener\("notificationclick"/)
+  assert.match(source, /showNotification/)
   assert.ok(!source.includes("caches.match(\"/index.html\")"))
   assert.ok(!source.includes("?pwa="))
 })
@@ -151,4 +154,35 @@ test("the public HTML points at the green theme and its own manifest", function 
   assert.match(html, /href="\/manifest\.json"/)
   assert.match(html, /href="\/icon-192\.png"/)
   assert.ok(!html.includes("?pwa="))
+})
+
+test("public pages load the shared drawer and expose the Divulgue CTA", function () {
+  for (const page of ["index.html", "vagas.html", "termos.html"]) {
+    const html = readFile(page)
+    assert.match(html, /src="\/site-drawer\.js"/, page)
+    assert.match(html, /data-drawer-open="application"/, page)
+    assert.match(html, /class="cta-label">Divulgue</, page)
+    assert.match(html, /aria-label="Divulgue sua vaga no Sua Vaga RS/, page)
+  }
+  const drawer = readFile("site-drawer.js")
+  assert.match(drawer, /id="company-form"/)
+  assert.match(drawer, /SVRSDrawer/)
+  assert.match(drawer, /api\/candidaturas/)
+  assert.ok(!readFile("index.html").includes("<dialog id=\"site-drawer\""))
+})
+
+test("public job cards include a WhatsApp share action and permalink handling", function () {
+  for (const page of ["index.html", "vagas.html"]) {
+    const html = readFile(page)
+    assert.match(html, /src="\/lib\/share\.js"/, page)
+    assert.match(html, /share-button/, page)
+    assert.match(html, /COMPARTILHAR NO WHATSAPP/, page)
+    assert.match(html, /buildShareUrl/, page)
+    assert.match(html, /parseVagaId/, page)
+    assert.match(html, /job-card--highlight/, page)
+  }
+  const css = readFile("public.css")
+  assert.match(css, /\.job-actions/)
+  assert.match(css, /\.share-button/)
+  assert.match(css, /\.header-cta/)
 })

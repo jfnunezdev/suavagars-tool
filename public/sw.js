@@ -1,6 +1,6 @@
 "use strict"
 
-const CACHE_NAME = "svrs-public-v1"
+const CACHE_NAME = "svrs-public-v2"
 const APP_SHELL = [
   "/",
   "/index.html",

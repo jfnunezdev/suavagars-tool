@@ -6,6 +6,7 @@ const { randomUUID } = require("node:crypto")
 const { isAdminRequest, sendUnauthorized } = require("../lib/admin-auth")
 const { publishApplication } = require("./vagas")
 const { isSameOriginRequest } = require("../lib/csrf")
+const { notifyNewApplication } = require("../lib/web-push")
 
 const MAX_BODY_BYTES = 16 * 1024
 const MAX_APPLICATIONS = 100
@@ -257,6 +258,7 @@ async function handler (request, response) {
     try {
       const application = validateApplication(await readJsonBody(request))
       await addApplication(application, storage)
+      await notifyNewApplication(application)
       sendJson(response, 201, { solicitacao: { id: application.id, createdAt: application.createdAt } })
     } catch (error) {
       sendJson(response, error.statusCode || 500, { error: error.message || "Não foi possível enviar a solicitação." })

@@ -7,6 +7,8 @@ const vagaHandler = require("./api/vaga")
 const vagasHandler = require("./api/vagas")
 const candidaturasHandler = require("./api/candidaturas")
 const gestorAuthHandler = require("./api/gestor-auth")
+const pushConfigHandler = require("./api/push-config")
+const pushSubscriptionsHandler = require("./api/push-subscriptions")
 
 const root = __dirname
 
@@ -110,6 +112,14 @@ const server = http.createServer((request, response) => {
     gestorAuthHandler(request, response)
     return
   }
+  if (requestUrl.pathname === "/api/push-config") {
+    pushConfigHandler(request, response)
+    return
+  }
+  if (requestUrl.pathname === "/api/push-subscriptions") {
+    pushSubscriptionsHandler(request, response)
+    return
+  }
   if (request.method !== "GET" && request.method !== "HEAD") {
     response.writeHead(405, { Allow: "GET, HEAD" })
     response.end("Method not allowed")
@@ -126,7 +136,7 @@ const server = http.createServer((request, response) => {
   }
   const redirectTarget = redirects.get(pathname)
   if (redirectTarget) {
-    response.writeHead(302, { Location: redirectTarget })
+    response.writeHead(302, { Location: `${redirectTarget}${requestUrl.search}` })
     response.end()
     return
   }

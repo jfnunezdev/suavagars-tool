@@ -58,6 +58,7 @@
 
   loginForm.addEventListener("submit", async function (event) {
     event.preventDefault()
+    window.dispatchEvent(new CustomEvent("svrs-user-gesture"))
     loginButton.disabled = true
     loginButton.setAttribute("aria-busy", "true")
     loginSpinner.hidden = false

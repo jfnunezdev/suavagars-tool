@@ -14,6 +14,17 @@
       <a href="index.html" aria-label="SuaVaga RS - página inicial"><img src="logo.png" alt="" class="brand-logo"></a>
       <p class="brand-name">SUAVAGARS</p>
       <p class="location">Vagas de emprego em Caxias do Sul</p>
+      <button type="button" class="header-cta" data-drawer-open="application" aria-label="Divulgue sua vaga no Sua Vaga RS (abre o formulário)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 11v2a1 1 0 0 0 1 1h3l8 5V5L7 10H4a1 1 0 0 0-1 1Z"></path>
+          <path d="M18 8a5 5 0 0 1 0 8"></path>
+          <path d="M7 14v4a2 2 0 0 0 4 0"></path>
+        </svg>
+        <span class="cta-label">Divulgue</span>
+      </button>
+      <button id="mobile-menu-toggle" class="mobile-menu-toggle" type="button" aria-controls="site-navigation" aria-expanded="false" aria-label="Abrir menu de navegação">
+        <span aria-hidden="true">☰</span>
+      </button>
     </div>
   </header>
 
@@ -39,6 +50,8 @@
     <a class="footer-link" href="termos.html">Termos de Uso</a>
   </footer>
 
+  <script src="/site-drawer.js"></script>
+  <script src="/lib/share.js"></script>
   <script>
     (function () {
       "use strict";
@@ -95,6 +108,8 @@
           });
           card.appendChild(details);
 
+          var actions = document.createElement("div");
+          actions.className = "job-actions";
           var link = safeUrl(vacancy.link);
           if (link) {
             var apply = document.createElement("a");
@@ -103,8 +118,18 @@
             apply.target = "_blank";
             apply.rel = "noopener noreferrer";
             apply.textContent = "QUERO ESSA VAGA";
-            card.appendChild(apply);
-
+            actions.appendChild(apply);
+          }
+          var share = document.createElement("a");
+          share.className = "share-button";
+          share.href = window.SVRSShare.buildShareUrl(vacancy, location.origin);
+          share.target = "_blank";
+          share.rel = "noopener noreferrer";
+          share.setAttribute("aria-label", "Compartilhar vaga de " + text(vacancy.role, "cargo a consultar") + " no WhatsApp");
+          share.textContent = "COMPARTILHAR NO WHATSAPP";
+          actions.appendChild(share);
+          card.appendChild(actions);
+          if (link) {
             var externalNote = document.createElement("p");
             externalNote.className = "job-external-note";
             externalNote.textContent = "Você será redirecionado para um site externo. O SuaVaga RS não é responsável pela contratação.";
@@ -112,6 +137,27 @@
           }
           jobsList.appendChild(card);
         });
+      }
+
+      function highlightSharedVacancy() {
+        var id = window.SVRSShare.parseVagaId(location.search);
+        if (!id) return;
+        var vacancy = vacancies.find(function (item) { return String(item.id) === id; });
+        if (!vacancy) {
+          jobsStatus.textContent = "A vaga compartilhada não está mais disponível.";
+          jobsList.innerHTML = '<div class="empty-state"><p>A vaga compartilhada não está mais disponível.</p></div>';
+          return;
+        }
+        var cards = jobsList.querySelectorAll(".job-card");
+        cards.forEach(function (card, index) {
+          if (vacancies[index] && String(vacancies[index].id) === id) {
+            card.classList.add("job-card--highlight");
+            card.setAttribute("tabindex", "-1");
+            card.focus({ preventScroll: true });
+            card.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+        document.title = text(vacancy.role, "Vaga") + " - SuaVaga RS";
       }
 
       function filterJobs() {
@@ -143,6 +189,7 @@
         .then(function (data) {
           vacancies = data && Array.isArray(data.vagas) ? data.vagas : [];
           render(vacancies);
+          highlightSharedVacancy();
         })
         .catch(function () {
           vacancies = [];

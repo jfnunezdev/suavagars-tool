@@ -13,12 +13,20 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="stylesheet" href="public.css">
 </head>
-<body>
+<body data-drawer-search="true">
   <header class="site-header">
     <div class="header-inner">
       <img src="logo.png" alt="" class="brand-logo">
       <p class="brand-name">SUAVAGARS</p>
       <p class="location">Vagas de emprego em Caxias do Sul</p>
+      <button type="button" class="header-cta" data-drawer-open="application" aria-label="Divulgue sua vaga no Sua Vaga RS (abre o formulário)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 11v2a1 1 0 0 0 1 1h3l8 5V5L7 10H4a1 1 0 0 0-1 1Z"></path>
+          <path d="M18 8a5 5 0 0 1 0 8"></path>
+          <path d="M7 14v4a2 2 0 0 0 4 0"></path>
+        </svg>
+        <span class="cta-label">Divulgue</span>
+      </button>
       <button id="mobile-menu-toggle" class="mobile-menu-toggle" type="button" aria-controls="site-navigation" aria-expanded="false" aria-label="Abrir menu de navegação">
         <span aria-hidden="true">☰</span>
       </button>
@@ -38,201 +46,24 @@
     </div>
   </main>
 
-  <dialog id="site-drawer" class="site-drawer" aria-labelledby="drawer-title">
-    <div class="drawer-header">
-      <h2 id="drawer-title">Menu</h2>
-      <button id="drawer-close" class="drawer-close" type="button" aria-label="Fechar menu">×</button>
-    </div>
-
-    <nav id="site-navigation" class="site-sidebar" aria-label="Navegação do site">
-      <button type="button" data-drawer-view="application">Para empresas</button>
-      <button type="button" data-drawer-view="jobs">Vagas abertas</button>
-      <button type="button" data-drawer-view="search">Buscar</button>
-      <a href="https://wa.me/5554996077805?text=Hola%2C%20soy%20empresa%20y%20quiero%20publicar%20una%20vaga%20en%20Sua%20Vaga%20RS" target="_blank" rel="noopener noreferrer">Falar com atendente</a>
-    </nav>
-
-    <div id="drawer-content" class="drawer-content" hidden>
-      <section id="drawer-search-view" aria-label="Buscar vagas" hidden>
-        <form id="job-search" class="search-box drawer-search" role="search">
-          <label for="search-input" class="sr-only">Buscar vaga por cargo</label>
-          <input id="search-input" type="search" placeholder="Buscar por cargo" autocomplete="off">
-          <button type="submit" aria-label="Buscar vagas">BUSCAR</button>
-        </form>
-      </section>
-
-      <section id="drawer-application-view" hidden>
-        <section id="application-form" class="application-section" aria-labelledby="application-title">
-          <h2 id="application-title">Envie uma vaga para análise</h2>
-          <p class="application-intro">Preencha os dados da oportunidade. A vaga só será publicada depois da revisão e autorização da equipe.</p>
-          <form id="company-form" class="application-form">
-            <div class="form-grid">
-              <div class="field">
-                <label for="company-name">Empresa</label>
-                <input id="company-name" name="company" type="text" maxlength="160" autocomplete="organization" required>
-              </div>
-              <div class="field">
-                <label for="job-role">Cargo</label>
-                <input id="job-role" name="role" type="text" maxlength="160" required>
-              </div>
-              <div class="field">
-                <label for="job-city">Cidade</label>
-                <input id="job-city" name="city" type="text" maxlength="120" value="Caxias do Sul - RS" required>
-              </div>
-              <div class="field">
-                <label for="job-salary">Salário</label>
-                <input id="job-salary" name="salary" type="text" maxlength="120" placeholder="Ex.: R$ 2.500,00 ou a combinar">
-              </div>
-              <div class="field">
-                <label for="job-model">Modelo de trabalho</label>
-                <input id="job-model" name="model" type="text" maxlength="100" placeholder="Presencial, híbrido ou remoto">
-              </div>
-              <div class="field">
-                <label for="job-type">Tipo de contratação</label>
-                <select id="job-type" name="contractType" required>
-                  <option value="">Selecione...</option>
-                  <option>CLT (Efetivo)</option>
-                  <option>Temporário</option>
-                  <option>Estágio</option>
-                  <option>PJ</option>
-                  <option>Autônomo</option>
-                  <option>Meio período</option>
-                  <option>Contrato</option>
-                  <option>A combinar</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="job-schedule">Horário / turno</label>
-                <input id="job-schedule" name="schedule" type="text" maxlength="200">
-              </div>
-              <div class="field">
-                <label for="job-link">Link para candidatura</label>
-                <input id="job-link" name="link" type="url" inputmode="url" maxlength="2048" placeholder="https://..." required>
-              </div>
-              <div class="field">
-                <label for="contact-name">Seu nome</label>
-                <input id="contact-name" name="contactName" type="text" maxlength="160" autocomplete="name" required>
-              </div>
-              <div class="field">
-                <label for="contact-phone">WhatsApp para contato</label>
-                <input id="contact-phone" name="contactPhone" type="tel" maxlength="40" autocomplete="tel" required>
-              </div>
-              <div class="field">
-                <label for="contact-email">E-mail para contato</label>
-                <input id="contact-email" name="contactEmail" type="email" maxlength="254" autocomplete="email">
-              </div>
-              <div class="field field-wide">
-                <label for="job-activities">Atividades</label>
-                <textarea id="job-activities" name="activities" maxlength="2000" rows="4"></textarea>
-              </div>
-              <div class="field">
-                <label for="job-benefits">Benefícios</label>
-                <textarea id="job-benefits" name="benefits" maxlength="1000" rows="3"></textarea>
-              </div>
-              <div class="field">
-                <label for="job-requirements">Requisitos</label>
-                <textarea id="job-requirements" name="requirements" maxlength="1000" rows="3"></textarea>
-              </div>
-            </div>
-            <button id="submit-application" type="submit">ENVIAR PARA ANÁLISE</button>
-            <p id="application-status" class="application-status" role="status" aria-live="polite"></p>
-          </form>
-        </section>
-      </section>
-    </div>
-  </dialog>
-
   <footer>
     <p class="disclaimer">Aviso Legal: O SuaVaga RS é apenas um divulgador de vagas. Não somos a empresa contratante, não recebemos currículos e não participamos do processo seletivo. Todas as vagas são redirecionadas para sites externos de emprego. Verifique sempre as informações diretamente no site oficial da vaga antes de se candidatar.</p>
     <a class="footer-link" href="termos.html">Termos de Uso</a>
   </footer>
 
+  <script src="/site-drawer.js"></script>
+  <script src="/lib/share.js"></script>
   <script>
     (function () {
       "use strict";
       var jobsList = document.getElementById("jobs-list");
       var jobsStatus = document.getElementById("jobs-status");
       var searchInput = document.getElementById("search-input");
-      var searchForm = document.getElementById("job-search");
-      var companyForm = document.getElementById("company-form");
-      var applicationStatus = document.getElementById("application-status");
-      var submitApplicationButton = document.getElementById("submit-application");
-      var menuToggle = document.getElementById("mobile-menu-toggle");
-      var siteNavigation = document.getElementById("site-navigation");
-      var siteDrawer = document.getElementById("site-drawer");
-      var drawerClose = document.getElementById("drawer-close");
-      var drawerTitle = document.getElementById("drawer-title");
-      var drawerContent = document.getElementById("drawer-content");
-      var drawerSearchView = document.getElementById("drawer-search-view");
-      var drawerApplicationView = document.getElementById("drawer-application-view");
-      var drawerScrollY = 0;
       var vacancies = [];
 
-      function resetDrawer() {
-        siteDrawer.dataset.state = "menu";
-        delete siteDrawer.dataset.view;
-        drawerTitle.textContent = "Menu";
-        siteNavigation.hidden = false;
-        drawerContent.hidden = true;
-        drawerSearchView.hidden = true;
-        drawerApplicationView.hidden = true;
-      }
-
-      function closeDrawer() {
-        if (siteDrawer.open) siteDrawer.close();
-      }
-
-      function openDrawer() {
-        drawerScrollY = window.scrollY;
-        resetDrawer();
-        siteDrawer.showModal();
-        menuToggle.setAttribute("aria-expanded", "true");
-        menuToggle.setAttribute("aria-label", "Fechar menu de navegação");
-      }
-
-      menuToggle.addEventListener("click", function () {
-        if (siteDrawer.open) closeDrawer();
-        else openDrawer();
-      });
-
-      siteNavigation.addEventListener("click", function (event) {
-        var trigger = event.target.closest("[data-drawer-view]");
-        if (!trigger) return;
-
-        var view = trigger.getAttribute("data-drawer-view");
-        if (view === "jobs") {
-          closeDrawer();
-          return;
-        }
-
-        siteNavigation.hidden = true;
-        drawerContent.hidden = false;
-        siteDrawer.dataset.state = "content";
-        siteDrawer.dataset.view = view;
-        if (view === "application") {
-          drawerTitle.textContent = "Envie uma vaga para análise";
-          drawerSearchView.hidden = true;
-          drawerApplicationView.hidden = false;
-          drawerApplicationView.querySelector("input").focus({ preventScroll: true });
-        } else {
-          drawerTitle.textContent = "Buscar";
-          drawerSearchView.hidden = false;
-          drawerApplicationView.hidden = true;
-          searchInput.focus({ preventScroll: true });
-        }
-      });
-
-      drawerClose.addEventListener("click", closeDrawer);
-
-      siteDrawer.addEventListener("click", function (event) {
-        if (event.target === siteDrawer) closeDrawer();
-      });
-
-      siteDrawer.addEventListener("close", function () {
-        resetDrawer();
-        menuToggle.setAttribute("aria-expanded", "false");
-        menuToggle.setAttribute("aria-label", "Abrir menu de navegação");
-        if (window.scrollY !== drawerScrollY) window.scrollTo(0, drawerScrollY);
-        menuToggle.focus({ preventScroll: true });
+      window.addEventListener("svrs-search", function (event) {
+        searchInput.value = event.detail.query;
+        filterJobs();
       });
 
       function safeUrl(value) {
@@ -281,6 +112,8 @@
           });
           card.appendChild(details);
 
+          var actions = document.createElement("div");
+          actions.className = "job-actions";
           var link = safeUrl(vacancy.link);
           if (link) {
             var apply = document.createElement("a");
@@ -289,7 +122,18 @@
             apply.target = "_blank";
             apply.rel = "noopener noreferrer";
             apply.textContent = "QUERO ESSA VAGA";
-            card.appendChild(apply);
+            actions.appendChild(apply);
+          }
+          var share = document.createElement("a");
+          share.className = "share-button";
+          share.href = window.SVRSShare.buildShareUrl(vacancy, location.origin);
+          share.target = "_blank";
+          share.rel = "noopener noreferrer";
+          share.setAttribute("aria-label", "Compartilhar vaga de " + text(vacancy.role, "cargo a consultar") + " no WhatsApp");
+          share.textContent = "COMPARTILHAR NO WHATSAPP";
+          actions.appendChild(share);
+          card.appendChild(actions);
+          if (link) {
             var externalNote = document.createElement("p");
             externalNote.className = "job-external-note";
             externalNote.textContent = "Você será redirecionado para um site externo. O SuaVaga RS não é responsável pela contratação.";
@@ -297,6 +141,26 @@
           }
           jobsList.appendChild(card);
         });
+      }
+
+      function highlightSharedVacancy() {
+        var id = window.SVRSShare.parseVagaId(location.search);
+        if (!id) return;
+        var vacancy = vacancies.find(function (item) { return String(item.id) === id; });
+        if (!vacancy) {
+          jobsStatus.textContent = "A vaga compartilhada não está mais disponível.";
+          return;
+        }
+        var cards = jobsList.querySelectorAll(".job-card");
+        cards.forEach(function (card, index) {
+          if (vacancies[index] && String(vacancies[index].id) === id) {
+            card.classList.add("job-card--highlight");
+            card.setAttribute("tabindex", "-1");
+            card.focus({ preventScroll: true });
+            card.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+        document.title = text(vacancy.role, "Vaga") + " - SuaVaga RS";
       }
 
       function filterJobs() {
@@ -313,39 +177,6 @@
         render(filtered);
       }
 
-      searchForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-        filterJobs();
-        closeDrawer();
-      });
-      searchInput.addEventListener("input", filterJobs);
-
-      companyForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
-        submitApplicationButton.disabled = true;
-        applicationStatus.textContent = "Enviando solicitação...";
-        try {
-          var formData = new FormData(companyForm);
-          var payload = {};
-          formData.forEach(function (value, key) {
-            payload[key] = value;
-          });
-          var response = await fetch("/api/candidaturas", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
-            body: JSON.stringify(payload)
-          });
-          var result = await response.json();
-          if (!response.ok) throw new Error(result && result.error ? result.error : "Não foi possível enviar a vaga.");
-          companyForm.reset();
-          applicationStatus.textContent = "Solicitação enviada. A equipe vai revisar os dados antes de publicar a vaga.";
-        } catch (error) {
-          applicationStatus.textContent = error.message || "Não foi possível enviar a vaga. Tente novamente.";
-        } finally {
-          submitApplicationButton.disabled = false;
-        }
-      });
-
       fetch("/api/vagas", { cache: "no-store", headers: { "Accept": "application/json" } })
         .then(function (response) {
           if (!response.ok) throw new Error("API indisponível");
@@ -354,6 +185,7 @@
         .then(function (data) {
           vacancies = data && Array.isArray(data.vagas) ? data.vagas : [];
           render(vacancies);
+          highlightSharedVacancy();
         })
         .catch(function () {
           vacancies = [];

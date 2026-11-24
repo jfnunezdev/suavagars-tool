@@ -14,6 +14,8 @@
   let titleBlinkTimer = null
   let reminderTimer = null
   let pendingAlertActive = false
+  const notificationEnableButton = document.getElementById("notification-enable")
+  const notificationStatus = document.getElementById("notification-status")
   const originalPageTitle = document.title
 
   function showManager () {
@@ -40,12 +42,8 @@
     publishedList.replaceChildren()
   }
 
-  function replayQueuedNotification (event) {
+  function replayQueuedNotification () {
     if (!notificationSoundQueued || !pendingAlertActive) {
-      return
-    }
-    const target = event && event.target
-    if (target && typeof target.closest === "function" && target.closest(".manager-card-actions")) {
       return
     }
     notificationSoundQueued = false
@@ -78,6 +76,55 @@
     }
   }
 
+  function showNotificationPrompt (message) {
+    if (message && notificationStatus) {
+      notificationStatus.textContent = message
+      notificationStatus.hidden = false
+    }
+    if (notificationEnableButton) {
+      notificationEnableButton.hidden = false
+    }
+  }
+
+  function hideNotificationPrompt () {
+    if (notificationEnableButton) {
+      notificationEnableButton.hidden = true
+    }
+    if (notificationStatus) {
+      notificationStatus.textContent = ""
+      notificationStatus.hidden = true
+    }
+  }
+
+  function notificationNeedsSetup () {
+    const audioBlocked = !notificationAudioContext || notificationAudioContext.state !== "running"
+    const permission = "Notification" in window ? Notification.permission : "unsupported"
+    return audioBlocked || permission !== "granted"
+  }
+
+  async function enableNotifications () {
+    unlockNotificationAudio()
+    if (!("Notification" in window)) {
+      showNotificationPrompt("Este navegador não mostra notificações. Mantenha o painel aberto para ouvir o alerta.")
+      return
+    }
+    let permission = Notification.permission
+    if (permission === "default") {
+      try {
+        permission = await Notification.requestPermission()
+      } catch (error) {
+        permission = "denied"
+      }
+    }
+    if (permission === "granted") {
+      if (notificationEnableButton) { notificationEnableButton.hidden = true }
+      showNotificationPrompt("Alertas ativados. Você será avisado mesmo com a tela desligada.")
+      window.dispatchEvent(new CustomEvent("svrs-notifications-ready"))
+      return
+    }
+    showNotificationPrompt("Permissão negada. Toque no painel uma vez para habilitar o som.")
+  }
+
   function scheduleChimeTone (frequency, startTime, duration) {
     const oscillator = notificationAudioContext.createOscillator()
     const volume = notificationAudioContext.createGain()
@@ -96,6 +143,7 @@
   function playNotificationSound () {
     if (!notificationAudioContext) {
       notificationSoundQueued = true
+      showNotificationPrompt("Toque para ativar o som e as notificações de novas vagas.")
       console.warn("Interaja com o painel uma vez para habilitar o som de notificações.")
       return
     }
@@ -112,6 +160,7 @@
         .then(playChime)
         .catch(function (error) {
           notificationSoundQueued = true
+          showNotificationPrompt("Toque novamente para habilitar o som de notificações.")
           console.warn("Não foi possível tocar o som de novas solicitações.", error)
         })
       return
@@ -168,12 +217,29 @@
 
   document.addEventListener("pointerdown", unlockNotificationAudio)
   document.addEventListener("keydown", unlockNotificationAudio)
+  window.addEventListener("svrs-user-gesture", unlockNotificationAudio)
+  if (notificationEnableButton) {
+    notificationEnableButton.addEventListener("click", enableNotifications)
+  }
+  window.addEventListener("svrs-auth", function (event) {
+    if (!event.detail || !event.detail.authenticated) {
+      hideNotificationPrompt()
+      return
+    }
+    if (notificationNeedsSetup()) {
+      showNotificationPrompt("Toque para ativar alertas de novas vagas, inclusive com a tela desligada.")
+    }
+  })
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden) {
+      unlockNotificationAudio()
       stopTitleBlink()
     }
   })
-  window.addEventListener("focus", stopTitleBlink)
+  window.addEventListener("focus", function () {
+    unlockNotificationAudio()
+    stopTitleBlink()
+  })
 
   function addDetail (list, label, value) {
     const row = document.createElement("div")

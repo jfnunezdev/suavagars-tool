@@ -1,6 +1,6 @@
 "use strict"
 
-const CACHE_NAME = "svrs-admin-v1"
+const CACHE_NAME = "svrs-admin-v2"
 const APP_SHELL = [
   "/admin/",
   "/admin/index.html",
@@ -75,5 +75,40 @@ self.addEventListener("fetch", event => {
         throw error
       }
     })()
+  )
+})
+
+self.addEventListener("push", event => {
+  let payload = {
+    title: "NOVA VAGA!",
+    body: "Há uma nova solicitação de vaga. Abra o painel para revisar.",
+    icon: "/admin/icon-192.png",
+    badge: "/admin/icon-192.png",
+    tag: "svrs-new-application",
+    renotify: true,
+    vibrate: [200, 100, 200],
+    data: { url: "/admin/" }
+  }
+  if (event.data) {
+    try {
+      payload = Object.assign({}, payload, event.data.json())
+    } catch (error) {
+      payload.body = event.data.text()
+    }
+  }
+  event.waitUntil(self.registration.showNotification(payload.title, payload))
+})
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close()
+  const data = event.notification.data || {}
+  const url = typeof data.url === "string" && data.url.startsWith("/") ? data.url : "/admin/"
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(clients => {
+      const existing = clients.find(client => client.url.includes(url) && "focus" in client)
+      if (existing) { return existing.focus() }
+      if (self.clients.openWindow) { return self.clients.openWindow(url) }
+      return undefined
+    })
   )
 })
