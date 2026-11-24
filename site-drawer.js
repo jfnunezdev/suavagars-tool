@@ -3,6 +3,13 @@
 
   if (document.getElementById("site-drawer")) { return }
 
+  function apiErrorMessage (result, fallback) {
+    const error = result && result.error ? result.error : result
+    if (typeof error === "string" && error) { return error }
+    if (error && typeof error.message === "string" && error.message) { return error.message }
+    return fallback
+  }
+
   const includeSearch = document.body.dataset.drawerSearch === "true"
   const searchView = includeSearch
     ? `<section id="drawer-search-view" aria-label="Buscar vagas" hidden>
@@ -247,8 +254,11 @@
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload)
       })
-      const result = await response.json()
-      if (!response.ok) { throw new Error(result && result.error ? result.error : "Não foi possível enviar a vaga.") }
+      const contentType = response.headers.get("content-type") || ""
+      const result = contentType.includes("application/json") ? await response.json() : null
+      if (!response.ok) {
+        throw new Error(apiErrorMessage(result, "Não foi possível enviar a vaga. Tente novamente."))
+      }
       companyForm.reset()
       applicationStatus.textContent = "Solicitação enviada. A equipe vai revisar os dados antes de publicar a vaga."
     } catch (error) {

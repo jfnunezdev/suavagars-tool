@@ -72,7 +72,7 @@ test("the two apps have distinct short names, icons and theme colors", function 
 
 test("public service worker never serves private pages or uses stale query flags", function () {
   const source = readFile("public/sw.js")
-  assert.match(source, /svrs-public-v2/)
+  assert.match(source, /svrs-public-v3/)
   assert.match(source, /PRIVATE_PATHS/)
   assert.match(source, /\/admin/)
   assert.match(source, /\/ferramenta/)
@@ -84,7 +84,7 @@ test("public service worker never serves private pages or uses stale query flags
 
 test("admin service worker uses the /admin/ scope and never falls back to the public index", function () {
   const source = readFile("admin/sw.js")
-  assert.match(source, /svrs-admin-v2/)
+  assert.match(source, /svrs-admin-v3/)
   assert.match(source, /"\/admin\/"/)
   assert.match(source, /caches\.match\("\/admin\/index\.html"\)/)
   assert.match(source, /addEventListener\("push"/)
@@ -185,4 +185,56 @@ test("public job cards include a WhatsApp share action and permalink handling", 
   assert.match(css, /\.job-actions/)
   assert.match(css, /\.share-button/)
   assert.match(css, /\.header-cta/)
+})
+
+test("the wordmark keeps RS orange at every viewport width", function () {
+  for (const page of ["index.html", "vagas.html", "termos.html"]) {
+    const html = readFile(page)
+    assert.match(html, /SUAVAGA<span class="brand-suffix">RS<\/span>/, page)
+  }
+  const css = readFile("public.css")
+  assert.match(css, /\.brand-suffix \{ color: var\(--orange\); \}/)
+  assert.doesNotMatch(css, /\.brand-name \{[^}]*linear-gradient/)
+})
+
+test("web-push is optional at module load so candidaturas cannot crash", function () {
+  const Module = require("node:module")
+  const webPushPath = require.resolve("../lib/web-push")
+  const candidaturasPath = require.resolve("../api/candidaturas")
+  const originalLoad = Module._load
+  delete require.cache[webPushPath]
+  delete require.cache[candidaturasPath]
+  Module._load = function (request, parent) {
+    if (request === "web-push" && parent && parent.filename === webPushPath) {
+      throw new Error("Cannot find module 'web-push'")
+    }
+    return originalLoad.call(this, request, parent, false)
+  }
+  try {
+    const handler = require("../api/candidaturas")
+    assert.equal(typeof handler, "function")
+  } finally {
+    Module._load = originalLoad
+    delete require.cache[webPushPath]
+    delete require.cache[candidaturasPath]
+  }
+})
+
+test("approval panel renders published vacancies even if pending requests fail", function () {
+  const source = readFile("admin/aprovacao.js")
+  assert.match(source, /Promise\.allSettled/)
+  assert.match(source, /readManagerResponse\("\/api\/candidaturas"/)
+  assert.match(source, /readManagerResponse\("\/api\/vagas"/)
+  assert.match(source, /renderPublished\(published\)/)
+  assert.ok(!source.includes("renderPublished(results[1].vagas)"))
+})
+
+test("API errors are normalized instead of leaking object strings", function () {
+  for (const file of ["site-drawer.js", "admin/aprovacao.js"]) {
+    const source = readFile(file)
+    assert.match(source, /function apiErrorMessage/, file)
+    assert.ok(!source.includes("throw new Error(result && result.error ? result.error"), file)
+  }
+  const drawer = readFile("site-drawer.js")
+  assert.match(drawer, /contentType\.includes\("application\/json"\)/)
 })

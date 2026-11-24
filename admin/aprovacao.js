@@ -18,6 +18,13 @@
   const notificationStatus = document.getElementById("notification-status")
   const originalPageTitle = document.title
 
+  function apiErrorMessage (value, fallback) {
+    const error = value && value.error ? value.error : value
+    if (typeof error === "string" && error) { return error }
+    if (error && typeof error.message === "string" && error.message) { return error.message }
+    return fallback
+  }
+
   function showManager () {
     loadManagerData()
     if (!refreshTimer) {
@@ -395,6 +402,15 @@
     })
   }
 
+  async function readManagerResponse (url, fallbackMessage) {
+    const response = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" } })
+    if (response.status === 401) { return { unauthorized: true } }
+    const contentType = response.headers.get("content-type") || ""
+    const data = contentType.includes("application/json") ? await response.json() : null
+    if (!response.ok) { throw new Error(apiErrorMessage(data, fallbackMessage)) }
+    return { data }
+  }
+
   async function loadManagerData (silent) {
     if (isLoadingManagerData) {
       if (!silent) {
@@ -411,63 +427,68 @@
       showListLoading(publishedList, 2)
     }
     try {
-      const responses = await Promise.all([
-        fetch("/api/candidaturas", { cache: "no-store", headers: { Accept: "application/json" } }),
-        fetch("/api/vagas", { cache: "no-store", headers: { Accept: "application/json" } })
+      const [pendingResult, publishedResult] = await Promise.allSettled([
+        readManagerResponse("/api/candidaturas", "Não foi possível carregar as solicitações."),
+        readManagerResponse("/api/vagas", "Não foi possível carregar as vagas publicadas.")
       ])
-      if (
-        responses.some(function (response) {
-          return response.status === 401
-        })
-      ) {
+      const unauthorized = [pendingResult, publishedResult].some(function (result) {
+        return result.status === "fulfilled" && result.value && result.value.unauthorized
+      })
+      if (unauthorized) {
         window.dispatchEvent(new CustomEvent("svrs-auth-expired"))
         return
       }
-      const results = await Promise.all(
-        responses.map(function (response) {
-          return response.json().then(function (data) {
-            if (!response.ok) {
-              throw new Error(
-                data && data.error ? data.error : "Não foi possível carregar o painel."
-              )
-            }
-            return data
+
+      const pendingData = pendingResult.status === "fulfilled" ? pendingResult.value.data : null
+      const publishedData = publishedResult.status === "fulfilled" ? publishedResult.value.data : null
+      const applications = pendingData && Array.isArray(pendingData.solicitacoes) ? pendingData.solicitacoes : null
+      const published = publishedData && Array.isArray(publishedData.vagas) ? publishedData.vagas : null
+
+      if (applications) {
+        const currentPendingIds = new Set(
+          applications.map(function (application) {
+            return application.id
           })
-        })
-      )
-      if (!Array.isArray(results[0].solicitacoes) || !Array.isArray(results[1].vagas)) {
-        throw new Error("Os dados recebidos do painel estão inválidos.")
-      }
-      const applications = results[0].solicitacoes
-      const currentPendingIds = new Set(
-        applications.map(function (application) {
-          return application.id
-        })
-      )
-      const isFirstPendingLoad = trackedPendingIds === null
-      const pendingListChanged =
-        trackedPendingIds === null ||
-        currentPendingIds.size !== trackedPendingIds.size ||
-        Array.from(currentPendingIds).some(function (id) {
-          return !trackedPendingIds.has(id)
-        })
-      const hasNewApplications =
-        !isFirstPendingLoad &&
-        Array.from(currentPendingIds).some(function (id) {
-          return !trackedPendingIds.has(id)
-        })
-      trackedPendingIds = currentPendingIds
-      if (pendingListChanged || showLoadingState) {
-        renderPending(applications)
-      }
-      renderPublished(results[1].vagas)
-      if (!applications.length) {
-        stopPendingReminder()
+        )
+        const isFirstPendingLoad = trackedPendingIds === null
+        const pendingListChanged =
+          trackedPendingIds === null ||
+          currentPendingIds.size !== trackedPendingIds.size ||
+          Array.from(currentPendingIds).some(function (id) {
+            return !trackedPendingIds.has(id)
+          })
+        const hasNewApplications =
+          !isFirstPendingLoad &&
+          Array.from(currentPendingIds).some(function (id) {
+            return !trackedPendingIds.has(id)
+          })
+        trackedPendingIds = currentPendingIds
+        if (pendingListChanged || showLoadingState) {
+          renderPending(applications)
+        }
+        if (!applications.length) {
+          stopPendingReminder()
+        } else {
+          startPendingReminder(isFirstPendingLoad || hasNewApplications)
+        }
       } else {
-        startPendingReminder(isFirstPendingLoad || hasNewApplications)
+        const pendingMessage = apiErrorMessage(pendingResult.reason, "Não foi possível carregar as solicitações.")
+        pendingStatus.textContent = pendingMessage
+        clearListLoading(pendingList)
+        pendingList.replaceChildren(createEmptyState(pendingMessage))
+        stopPendingReminder()
+      }
+
+      if (published) {
+        renderPublished(published)
+      } else {
+        const publishedMessage = apiErrorMessage(publishedResult.reason, "Não foi possível carregar as vagas publicadas.")
+        publishedStatus.textContent = publishedMessage
+        clearListLoading(publishedList)
+        publishedList.replaceChildren(createEmptyState(publishedMessage))
       }
     } catch (error) {
-      const pendingMessage = error.message || "Não foi possível carregar as solicitações."
+      const pendingMessage = apiErrorMessage(error, "Não foi possível carregar as solicitações.")
       pendingStatus.textContent = pendingMessage
       publishedStatus.textContent = "Atualize a página para tentar novamente."
       clearListLoading(pendingList)
@@ -500,13 +521,11 @@
       })
       const result = await response.json()
       if (!response.ok) {
-        throw new Error(
-          result && result.error ? result.error : "Não foi possível processar a solicitação."
-        )
+        throw new Error(apiErrorMessage(result, "Não foi possível processar a solicitação."))
       }
       await loadManagerData()
     } catch (error) {
-      pendingStatus.textContent = error.message || "Não foi possível processar a solicitação."
+      pendingStatus.textContent = apiErrorMessage(error, "Não foi possível processar a solicitação.")
       button.disabled = false
       button.setAttribute("aria-busy", "false")
       const spinner = button.querySelector(".spinner")
@@ -532,11 +551,11 @@
       })
       const result = await response.json()
       if (!response.ok) {
-        throw new Error(result && result.error ? result.error : "Não foi possível excluir a vaga.")
+        throw new Error(apiErrorMessage(result, "Não foi possível excluir a vaga."))
       }
       await loadManagerData()
     } catch (error) {
-      publishedStatus.textContent = error.message || "Não foi possível excluir a vaga."
+      publishedStatus.textContent = apiErrorMessage(error, "Não foi possível excluir a vaga.")
       button.disabled = false
       button.setAttribute("aria-busy", "false")
       const spinner = button.querySelector(".spinner")

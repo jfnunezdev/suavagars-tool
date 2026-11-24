@@ -167,15 +167,13 @@ body {
 }
 .brand-name {
   margin: 1px 0 0;
+  color: var(--ink);
   font-size: 24px;
   font-weight: 900;
   letter-spacing: 1.2px;
   line-height: 1.1;
-  background: linear-gradient(90deg, var(--ink) 0 78%, var(--orange) 78% 100%);
-  color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
 }
+.brand-suffix { color: var(--orange); }
 .location { margin: 4px 0 0; color: var(--muted); font-size: 15px; font-weight: 700; }
 .header-cta {
   display: inline-flex;
