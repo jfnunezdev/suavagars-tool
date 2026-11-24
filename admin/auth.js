@@ -22,8 +22,28 @@
     passwordEyeOff.hidden = true
   }
 
+  let permissionRequest = null
+
   function announce (authenticated) {
     window.dispatchEvent(new CustomEvent("svrs-auth", { detail: { authenticated } }))
+  }
+
+  function requestNotificationPermission () {
+    if (!("Notification" in window) || Notification.permission !== "default") {
+      return Promise.resolve("Notification" in window ? Notification.permission : "unsupported")
+    }
+    if (permissionRequest) { return permissionRequest }
+    permissionRequest = Promise.resolve(Notification.requestPermission())
+      .then(function (permission) {
+        if (permission === "granted") {
+          window.dispatchEvent(new CustomEvent("svrs-notifications-ready"))
+        }
+        return permission
+      })
+      .catch(function () {
+        return "denied"
+      })
+    return permissionRequest
   }
 
   function showLogin (message) {
@@ -59,6 +79,7 @@
   loginForm.addEventListener("submit", async function (event) {
     event.preventDefault()
     window.dispatchEvent(new CustomEvent("svrs-user-gesture"))
+    requestNotificationPermission()
     loginButton.disabled = true
     loginButton.setAttribute("aria-busy", "true")
     loginSpinner.hidden = false
@@ -83,6 +104,10 @@
       loginButton.setAttribute("aria-busy", "false")
       loginSpinner.hidden = true
     }
+  })
+
+  window.addEventListener("svrs-request-notifications", function () {
+    requestNotificationPermission()
   })
 
   logoutButton.addEventListener("click", async function () {

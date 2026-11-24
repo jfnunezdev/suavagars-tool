@@ -55,19 +55,49 @@ test("push payload keeps the admin identity and bounded text", function () {
   assert.match(payload.body, /Nova solicitação:/)
 })
 
-test("push config exposes only the public VAPID key", function () {
-  const original = process.env.VAPID_PUBLIC_KEY
-  process.env.VAPID_PUBLIC_KEY = "public-key"
+test("push config exposes only the public VAPID key and real availability", function () {
+  const keys = ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT", "KV_REST_API_URL", "KV_REST_API_TOKEN", "VERCEL"]
+  const original = {}
+  keys.forEach(function (key) { original[key] = process.env[key] })
+  function restore () {
+    keys.forEach(function (key) {
+      if (original[key] === undefined) { delete process.env[key] } else { process.env[key] = original[key] }
+    })
+  }
   try {
-    const response = fakeResponse()
+    process.env.VAPID_PUBLIC_KEY = "public-key"
+    process.env.VAPID_PRIVATE_KEY = "private-key"
+    process.env.VAPID_SUBJECT = "https://suavagars.com.br"
+    delete process.env.KV_REST_API_URL
+    delete process.env.KV_REST_API_TOKEN
+    delete process.env.VERCEL
+
+    let response = fakeResponse()
     pushConfig({ method: "GET" }, response)
     assert.equal(response.statusCode, 200)
-    assert.deepEqual(JSON.parse(response.body), { publicKey: "public-key", enabled: true })
+    assert.deepEqual(JSON.parse(response.body), { publicKey: "public-key", enabled: true, storageReady: true })
     assert.equal(response.headers["Cache-Control"], "no-store")
+
+    process.env.VERCEL = "1"
+    response = fakeResponse()
+    pushConfig({ method: "GET" }, response)
+    assert.deepEqual(JSON.parse(response.body), { publicKey: "public-key", enabled: false, storageReady: false })
+
+    process.env.KV_REST_API_URL = "https://kv.example"
+    process.env.KV_REST_API_TOKEN = "token"
+    response = fakeResponse()
+    pushConfig({ method: "GET" }, response)
+    assert.deepEqual(JSON.parse(response.body), { publicKey: "public-key", enabled: true, storageReady: true })
+
+    delete process.env.VAPID_PRIVATE_KEY
+    response = fakeResponse()
+    pushConfig({ method: "GET" }, response)
+    assert.deepEqual(JSON.parse(response.body), { publicKey: "public-key", enabled: false, storageReady: true })
+
     const rejected = fakeResponse()
     pushConfig({ method: "POST" }, rejected)
     assert.equal(rejected.statusCode, 405)
   } finally {
-    if (original === undefined) { delete process.env.VAPID_PUBLIC_KEY } else { process.env.VAPID_PUBLIC_KEY = original }
+    restore()
   }
 })

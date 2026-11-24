@@ -1,6 +1,6 @@
 "use strict"
 
-const CACHE_NAME = "svrs-admin-v3"
+const CACHE_NAME = "svrs-admin-v4"
 const APP_SHELL = [
   "/admin/",
   "/admin/index.html",
@@ -96,7 +96,17 @@ self.addEventListener("push", event => {
       payload.body = event.data.text()
     }
   }
-  event.waitUntil(self.registration.showNotification(payload.title, payload))
+  event.waitUntil(
+    (async () => {
+      try {
+        const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true })
+        clients.forEach(client => client.postMessage({ type: "svrs-new-application" }))
+      } catch (error) {
+        console.warn("Não foi possível avisar o painel aberto.", error)
+      }
+      await self.registration.showNotification(payload.title, payload)
+    })()
+  )
 })
 
 self.addEventListener("notificationclick", event => {

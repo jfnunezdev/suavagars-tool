@@ -10,10 +10,12 @@
   let reloadAfterCurrentLoad = false
   let trackedPendingIds = null
   let notificationAudioContext = null
+  let audioUnlockPromise = null
+  let soundInFlight = null
   let notificationSoundQueued = false
   let titleBlinkTimer = null
-  let reminderTimer = null
   let pendingAlertActive = false
+  let pushReady = false
   const notificationEnableButton = document.getElementById("notification-enable")
   const notificationStatus = document.getElementById("notification-status")
   const originalPageTitle = document.title
@@ -49,87 +51,101 @@
     publishedList.replaceChildren()
   }
 
-  function replayQueuedNotification () {
-    if (!notificationSoundQueued || !pendingAlertActive) {
-      return
-    }
-    notificationSoundQueued = false
-    playNotificationSound()
-  }
-
-  function unlockNotificationAudio (event) {
-    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext
-    if (!AudioContextConstructor) {
-      return
-    }
-    try {
-      if (!notificationAudioContext) {
-        notificationAudioContext = new AudioContextConstructor()
-      }
-      if (notificationAudioContext.state !== "running") {
-        notificationAudioContext
-          .resume()
-          .then(function () {
-            replayQueuedNotification(event)
-          })
-          .catch(function (error) {
-            console.warn("Não foi possível habilitar o som de novas solicitações.", error)
-          })
-      } else {
-        replayQueuedNotification(event)
-      }
-    } catch (error) {
-      console.warn("Não foi possível habilitar o som de novas solicitações.", error)
-    }
-  }
-
-  function showNotificationPrompt (message) {
-    if (message && notificationStatus) {
-      notificationStatus.textContent = message
-      notificationStatus.hidden = false
-    }
-    if (notificationEnableButton) {
-      notificationEnableButton.hidden = false
-    }
-  }
-
-  function hideNotificationPrompt () {
-    if (notificationEnableButton) {
-      notificationEnableButton.hidden = true
-    }
+  function clearNotificationStatus () {
     if (notificationStatus) {
       notificationStatus.textContent = ""
       notificationStatus.hidden = true
     }
   }
 
-  function notificationNeedsSetup () {
-    const audioBlocked = !notificationAudioContext || notificationAudioContext.state !== "running"
-    const permission = "Notification" in window ? Notification.permission : "unsupported"
-    return audioBlocked || permission !== "granted"
+  function showNotificationError (message) {
+    if (message && notificationStatus) {
+      notificationStatus.textContent = message
+      notificationStatus.hidden = false
+    }
   }
 
-  async function enableNotifications () {
-    unlockNotificationAudio()
-    if (!("Notification" in window)) {
-      showNotificationPrompt("Este navegador não mostra notificações. Mantenha o painel aberto para ouvir o alerta.")
-      return
-    }
-    let permission = Notification.permission
-    if (permission === "default") {
-      try {
-        permission = await Notification.requestPermission()
-      } catch (error) {
-        permission = "denied"
+  function showFallbackButton () {
+    if (notificationEnableButton) { notificationEnableButton.hidden = false }
+  }
+
+  function hideFallbackButton () {
+    if (notificationEnableButton) { notificationEnableButton.hidden = true }
+  }
+
+  function needsNotificationFallback () {
+    return !pushReady && "Notification" in window && Notification.permission === "default"
+  }
+
+  function unlockNotificationAudio () {
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext
+    if (!AudioContextConstructor) { return Promise.resolve(false) }
+    try {
+      if (!notificationAudioContext) {
+        notificationAudioContext = new AudioContextConstructor()
       }
+      if (notificationAudioContext.state === "running") { return Promise.resolve(true) }
+      if (!audioUnlockPromise) {
+        audioUnlockPromise = Promise.resolve(notificationAudioContext.resume())
+          .then(function () {
+            return notificationAudioContext.state === "running"
+          })
+          .catch(function (error) {
+            console.warn("Não foi possível habilitar o som de novas solicitações.", error)
+            return false
+          })
+          .then(function (ready) {
+            audioUnlockPromise = null
+            return ready
+          })
+      }
+      return audioUnlockPromise
+    } catch (error) {
+      console.warn("Não foi possível habilitar o som de novas solicitações.", error)
+      return Promise.resolve(false)
     }
-    if (permission === "granted") {
-      if (notificationEnableButton) { notificationEnableButton.hidden = true }
-      showNotificationPrompt("Alertas ativados. Você será avisado mesmo com a tela desligada.")
-      window.dispatchEvent(new CustomEvent("svrs-notifications-ready"))
-      return
+  }
+
+  function playChime () {
+    for (let repetition = 0; repetition < 3; repetition += 1) {
+      const startTime = notificationAudioContext.currentTime + 0.08 + repetition * 1.5
+      scheduleChimeTone(784, startTime, 0.42)
+      scheduleChimeTone(659.25, startTime + 0.48, 0.46)
     }
-    showNotificationPrompt("Permissão negada. Toque no painel uma vez para habilitar o som.")
+  }
+
+  function playNotificationSound () {
+    if (!notificationAudioContext) {
+      notificationSoundQueued = true
+      showNotificationError("Toque no painel para habilitar o som do alerta.")
+      return Promise.resolve(false)
+    }
+    notificationSoundQueued = true
+    if (soundInFlight) { return soundInFlight }
+    soundInFlight = (async function () {
+      const ready = await unlockNotificationAudio()
+      if (!ready) {
+        showNotificationError("Toque novamente para habilitar o som de novas solicitações.")
+        return false
+      }
+      if (!pendingAlertActive) {
+        notificationSoundQueued = false
+        return false
+      }
+      notificationSoundQueued = false
+      playChime()
+      return true
+    })()
+    soundInFlight.then(
+      function () { soundInFlight = null },
+      function () { soundInFlight = null }
+    )
+    return soundInFlight
+  }
+
+  function replayQueuedNotification () {
+    if (!notificationSoundQueued || !pendingAlertActive) { return }
+    playNotificationSound()
   }
 
   function scheduleChimeTone (frequency, startTime, duration) {
@@ -145,34 +161,6 @@
     volume.connect(notificationAudioContext.destination)
     oscillator.start(startTime)
     oscillator.stop(startTime + duration + 0.02)
-  }
-
-  function playNotificationSound () {
-    if (!notificationAudioContext) {
-      notificationSoundQueued = true
-      showNotificationPrompt("Toque para ativar o som e as notificações de novas vagas.")
-      console.warn("Interaja com o painel uma vez para habilitar o som de notificações.")
-      return
-    }
-    const playChime = function () {
-      for (let repetition = 0; repetition < 3; repetition += 1) {
-        const startTime = notificationAudioContext.currentTime + 0.08 + repetition * 1.5
-        scheduleChimeTone(784, startTime, 0.42)
-        scheduleChimeTone(659.25, startTime + 0.48, 0.46)
-      }
-    }
-    if (notificationAudioContext.state !== "running") {
-      notificationAudioContext
-        .resume()
-        .then(playChime)
-        .catch(function (error) {
-          notificationSoundQueued = true
-          showNotificationPrompt("Toque novamente para habilitar o som de notificações.")
-          console.warn("Não foi possível tocar o som de novas solicitações.", error)
-        })
-      return
-    }
-    playChime()
   }
 
   function startTitleBlink () {
@@ -201,52 +189,73 @@
       startTitleBlink()
       playNotificationSound()
     }
-    if (!reminderTimer) {
-      reminderTimer = window.setInterval(function () {
-        if (!pendingAlertActive) {
-          return
-        }
-        startTitleBlink()
-        playNotificationSound()
-      }, 300000)
-    }
   }
 
   function stopPendingReminder () {
     pendingAlertActive = false
-    notificationSoundQueued = false
-    if (reminderTimer) {
-      window.clearInterval(reminderTimer)
-      reminderTimer = null
-    }
     stopTitleBlink()
   }
 
-  document.addEventListener("pointerdown", unlockNotificationAudio)
-  document.addEventListener("keydown", unlockNotificationAudio)
-  window.addEventListener("svrs-user-gesture", unlockNotificationAudio)
+  function handlePanelFocus () {
+    unlockNotificationAudio()
+      .then(replayQueuedNotification)
+      .then(stopTitleBlink)
+  }
+
+  document.addEventListener("pointerdown", function () {
+    unlockNotificationAudio().then(replayQueuedNotification)
+  })
+  document.addEventListener("keydown", function () {
+    unlockNotificationAudio().then(replayQueuedNotification)
+  })
+  window.addEventListener("svrs-user-gesture", function () {
+    unlockNotificationAudio().then(replayQueuedNotification)
+  })
   if (notificationEnableButton) {
-    notificationEnableButton.addEventListener("click", enableNotifications)
+    notificationEnableButton.addEventListener("click", function () {
+      window.dispatchEvent(new CustomEvent("svrs-user-gesture"))
+      window.dispatchEvent(new CustomEvent("svrs-request-notifications"))
+    })
   }
   window.addEventListener("svrs-auth", function (event) {
     if (!event.detail || !event.detail.authenticated) {
-      hideNotificationPrompt()
+      pushReady = false
+      hideFallbackButton()
+      clearNotificationStatus()
       return
     }
-    if (notificationNeedsSetup()) {
-      showNotificationPrompt("Toque para ativar alertas de novas vagas, inclusive com a tela desligada.")
+    if (needsNotificationFallback()) {
+      showFallbackButton()
+    } else {
+      hideFallbackButton()
     }
+    if ("Notification" in window && Notification.permission === "denied") {
+      showNotificationError("Permissão negada. Ative as notificações nas configurações do navegador.")
+    }
+  })
+  window.addEventListener("svrs-push-result", function (event) {
+    const result = event.detail || {}
+    if (result.ok) {
+      pushReady = true
+      hideFallbackButton()
+      clearNotificationStatus()
+      return
+    }
+    pushReady = false
+    if (needsNotificationFallback()) { showFallbackButton() }
+    showNotificationError(result.message || "Não foi possível ativar as notificações.")
   })
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) {
-      unlockNotificationAudio()
-      stopTitleBlink()
-    }
+    if (!document.hidden) { handlePanelFocus() }
   })
-  window.addEventListener("focus", function () {
-    unlockNotificationAudio()
-    stopTitleBlink()
-  })
+  window.addEventListener("focus", handlePanelFocus)
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.addEventListener("message", function (event) {
+      if (event.data && event.data.type === "svrs-new-application") {
+        loadManagerData(true, true)
+      }
+    })
+  }
 
   function addDetail (list, label, value) {
     const row = document.createElement("div")
@@ -411,9 +420,9 @@
     return { data }
   }
 
-  async function loadManagerData (silent) {
+  async function loadManagerData (silent, force) {
     if (isLoadingManagerData) {
-      if (!silent) {
+      if (!silent || force) {
         reloadAfterCurrentLoad = true
       }
       return
@@ -469,7 +478,7 @@
         if (!applications.length) {
           stopPendingReminder()
         } else {
-          startPendingReminder(isFirstPendingLoad || hasNewApplications)
+          startPendingReminder(hasNewApplications)
         }
       } else {
         const pendingMessage = apiErrorMessage(pendingResult.reason, "Não foi possível carregar as solicitações.")

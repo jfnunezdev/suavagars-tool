@@ -5,7 +5,7 @@
   const viewEditor = document.getElementById("view-editor")
   const viewAprovacao = document.getElementById("view-aprovacao")
   let authenticated = false
-  let pushBusy = false
+  let pushInFlight = null
 
   function selectTab (tab) {
     const isEditor = tab === "editor"
@@ -22,19 +22,44 @@
     return Uint8Array.from(rawData, character => character.charCodeAt(0))
   }
 
-  async function subscribePush () {
-    if (pushBusy || !authenticated) { return }
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) { return }
-    if (!("Notification" in window) || Notification.permission !== "granted") { return }
-    pushBusy = true
+  function subscribePush () {
+    if (pushInFlight) { return pushInFlight }
+    pushInFlight = runSubscribePush().then(function (result) {
+      pushInFlight = null
+      return result
+    })
+    return pushInFlight
+  }
+
+  async function runSubscribePush () {
+    if (!authenticated) { return { ok: false, silent: true } }
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return { ok: false, message: "Este navegador não suporta notificações push." }
+    }
+    if (!("Notification" in window)) {
+      return { ok: false, message: "Este navegador não mostra notificações." }
+    }
+    if (Notification.permission === "default") {
+      return { ok: false, message: "Permissão de notificação pendente." }
+    }
+    if (Notification.permission === "denied") {
+      return { ok: false, message: "Permissão negada. Ative as notificações nas configurações do navegador." }
+    }
     try {
       const configResponse = await fetch("/api/push-config", {
         cache: "no-store",
         headers: { Accept: "application/json" }
       })
-      if (!configResponse.ok) { throw new Error("Configuração de notificações indisponível.") }
-      const config = await configResponse.json()
-      if (!config.publicKey) { return }
+      const config = await configResponse.json().catch(function () { return {} })
+      if (!configResponse.ok) {
+        throw new Error(config.error || "Configuração de notificações indisponível.")
+      }
+      if (!config.enabled || !config.publicKey) {
+        if (config.storageReady === false) {
+          throw new Error("Configure KV_REST_API_URL e KV_REST_API_TOKEN na Vercel para receber notificações.")
+        }
+        throw new Error("Notificações push indisponíveis neste ambiente.")
+      }
       const registration = await navigator.serviceWorker.ready
       let subscription = await registration.pushManager.getSubscription()
       if (!subscription) {
@@ -48,12 +73,23 @@
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(subscription)
       })
-      if (!response.ok) { throw new Error("Não foi possível registrar as notificações.") }
+      const result = await response.json().catch(function () { return {} })
+      if (!response.ok) {
+        throw new Error(result.error || "Não foi possível registrar as notificações.")
+      }
+      return { ok: true }
     } catch (error) {
       console.error("Não foi possível ativar as notificações.", error)
-    } finally {
-      pushBusy = false
+      return { ok: false, message: error.message || "Não foi possível ativar as notificações." }
     }
+  }
+
+  function requestSubscribe () {
+    subscribePush().then(function (result) {
+      if (!result.silent) {
+        window.dispatchEvent(new CustomEvent("svrs-push-result", { detail: result }))
+      }
+    })
   }
 
   async function unsubscribePush () {
@@ -88,11 +124,11 @@
       unsubscribePush()
       return
     }
-    subscribePush()
+    requestSubscribe()
   })
 
   window.addEventListener("svrs-notifications-ready", function () {
-    if (authenticated) { subscribePush() }
+    if (authenticated) { requestSubscribe() }
   })
 
   if ("serviceWorker" in navigator) {
@@ -100,7 +136,7 @@
       navigator.serviceWorker
         .register("/admin/sw.js", { scope: "/admin/" })
         .then(function () {
-          if (authenticated) { subscribePush() }
+          if (authenticated) { requestSubscribe() }
         })
         .catch(function (error) {
           console.error("Não foi possível preparar o painel como aplicativo.", error)
