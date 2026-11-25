@@ -53,7 +53,9 @@ const mimeTypes = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/manifest+json; charset=utf-8",
-  ".png": "image/png"
+  ".png": "image/png",
+  ".txt": "text/plain; charset=utf-8",
+  ".xml": "application/xml; charset=utf-8"
 }
 const publicAssets = new Map([
   ["/manifest.json", path.join("public", "manifest.json")],

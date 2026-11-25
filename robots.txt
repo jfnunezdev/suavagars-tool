@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /ferramenta
+Disallow: /gestor
+
+Sitemap: https://www.suavagars.com.br/sitemap.xml
