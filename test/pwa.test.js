@@ -73,7 +73,7 @@ test("the two apps have distinct short names, icons and theme colors", function 
 
 test("public service worker never serves private pages or uses stale query flags", function () {
   const source = readFile("public/sw.js")
-  assert.match(source, /svrs-public-v5/)
+  assert.match(source, /svrs-public-v6/)
   assert.match(source, /PRIVATE_PATHS/)
   assert.match(source, /\/admin/)
   assert.match(source, /\/ferramenta/)
@@ -247,6 +247,22 @@ test("public pages use the triangle logo as the brand mark", function () {
   assert.match(sw, /\/public\/logo-triangulo\.png/)
   assert.doesNotMatch(sw, /\/public\/icone-app\.png/)
   assert.ok(fs.existsSync(path.join(root, "public/logo-triangulo.png")))
+})
+
+test("browser tabs use the real PNG app icon on every page", function () {
+  for (const page of ["index.html", "vagas.html", "termos.html", "admin/index.html"]) {
+    const html = readFile(page)
+    assert.match(html, /<link rel="icon" type="image\/png" href="\/icone-app\.png"/, page)
+  }
+  const icon = fs.readFileSync(path.join(root, "public/icone-app.png"))
+  assert.equal(icon.subarray(0, 8).toString("hex"), "89504e470d0a1a0a")
+  assert.match(readFile("local-server.js"), /"\/icone-app\.png", path\.join\("public", "icone-app\.png"\)/)
+  const config = readJson("vercel.json")
+  assert.ok(
+    config.rewrites.some(function (rule) {
+      return rule.source === "/icone-app.png" && rule.destination === "/public/icone-app.png"
+    })
+  )
 })
 
 test("web-push is optional at module load so candidaturas cannot crash", function () {

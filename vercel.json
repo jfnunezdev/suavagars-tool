@@ -48,6 +48,10 @@
     {
       "source": "/icon-512.png",
       "destination": "/public/icon-512.png"
+    },
+    {
+      "source": "/icone-app.png",
+      "destination": "/public/icone-app.png"
     }
   ],
   "headers": [

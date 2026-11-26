@@ -93,6 +93,7 @@ const publicAssets = new Map([
   ["/sw.js", path.join("public", "sw.js")],
   ["/icon-192.png", path.join("public", "icon-192.png")],
   ["/icon-512.png", path.join("public", "icon-512.png")],
+  ["/icone-app.png", path.join("public", "icone-app.png")],
   ["/admin/", path.join("admin", "index.html")]
 ])
 const redirects = new Map([
