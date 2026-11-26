@@ -97,6 +97,11 @@ body {
   margin: auto;
   border-radius: 16px;
   box-shadow: 0 18px 55px rgba(8, 24, 55, .28);
+  animation: drawer-slide-up .45s ease both;
+}
+@keyframes drawer-slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .site-drawer[data-view="application"] { height: min(88dvh, 900px); }
 .site-drawer[data-view="application"] .drawer-header h2 { display: none; }
@@ -180,61 +185,34 @@ body {
   z-index: 1001;
   right: calc(16px + env(safe-area-inset-right, 0px));
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  display: grid;
-  width: 60px;
-  height: 60px;
-  place-items: center;
-  padding: 0;
+  display: inline-flex;
+  max-width: calc(100vw - 32px);
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
   border: 0;
-  border-radius: 50%;
-  background: var(--orange);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #FF8A3D, var(--orange));
   color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(249, 115, 22, .42), 0 2px 6px rgba(15, 23, 42, .18);
-  transition: background .15s ease, transform .15s ease;
+  transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
 }
-.floating-publish-bubble svg { width: 28px; height: 28px; }
-.floating-publish-bubble:hover,
-.floating-publish-bubble:focus-visible,
-.floating-publish-bubble:active,
-.floating-publish-bubble.is-tooltip-visible { background: var(--orange-dark); }
-.floating-publish-bubble:hover { transform: translateY(-2px); }
+.floating-publish-bubble__label { white-space: nowrap; }
+.floating-publish-bubble:hover {
+  transform: scale(1.04);
+  box-shadow: 0 12px 30px rgba(249, 115, 22, .5), 0 3px 8px rgba(15, 23, 42, .2);
+}
+.floating-publish-bubble:active { transform: scale(.99); }
 .floating-publish-bubble:focus-visible { outline: 3px solid rgba(249, 115, 22, .35); outline-offset: 3px; }
-.floating-publish-bubble__tooltip {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 12px);
-  width: max-content;
-  max-width: calc(100vw - 48px);
-  padding: 9px 12px;
-  border-radius: 8px;
-  background: var(--ink);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.25;
-  text-align: center;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(4px);
-  transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
-}
-.floating-publish-bubble__tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  right: 24px;
-  border: 6px solid transparent;
-  border-top-color: var(--ink);
-}
-.floating-publish-bubble:hover .floating-publish-bubble__tooltip,
-.floating-publish-bubble:focus-visible .floating-publish-bubble__tooltip,
-.floating-publish-bubble:active .floating-publish-bubble__tooltip,
-.floating-publish-bubble.is-tooltip-visible .floating-publish-bubble__tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+@media (prefers-reduced-motion: reduce) {
+  .site-drawer[data-state="content"] { animation: none; }
+  .floating-publish-bubble { transition: none; }
 }
 
 .hero {
@@ -540,7 +518,6 @@ body {
 .application-form label { display: block; margin-bottom: 6px; font-weight: 700; }
 
 .application-form input,
-.application-form select,
 .application-form textarea {
   width: 100%;
   min-height: 46px;
@@ -554,11 +531,81 @@ body {
 
 .application-form textarea { resize: vertical; }
 .application-form input:focus,
-.application-form select:focus,
 .application-form textarea:focus {
   outline: 3px solid rgba(249, 115, 22, .18);
   border-color: var(--orange);
 }
+
+.application-form .custom-select { position: relative; }
+.application-form .custom-select__trigger,
+.application-form .custom-select__option {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #b9cbd8;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.application-form .custom-select__trigger:hover,
+.application-form .custom-select__trigger:focus-visible { border-color: var(--orange); }
+.application-form .custom-select__trigger[aria-invalid="true"] { border-color: #dc2626; }
+.application-form .custom-select__chevron { width: 18px; height: 18px; flex: 0 0 auto; transition: transform .18s ease; }
+.application-form .custom-select.is-open .custom-select__chevron { transform: rotate(180deg); }
+.application-form .custom-select__panel {
+  position: absolute;
+  z-index: 30;
+  right: 0;
+  left: 0;
+  max-height: var(--custom-select-max, 260px);
+  overflow: hidden;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(8, 24, 55, .18);
+}
+.application-form .custom-select__panel[hidden] { display: none; }
+.application-form .custom-select__search {
+  min-height: 38px;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border-color: #CBD5E1;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.application-form .custom-select__options {
+  max-height: 180px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.application-form .custom-select__option {
+  min-height: 40px;
+  margin-top: 4px;
+  border-color: transparent;
+  border-radius: 8px;
+}
+.application-form .custom-select__option:first-child { margin-top: 0; }
+.application-form .custom-select__option[hidden] { display: none; }
+.application-form .custom-select__option:hover,
+.application-form .custom-select__option:focus-visible {
+  border-color: transparent;
+  background: var(--orange-light);
+  color: var(--orange-dark);
+}
+.application-form .custom-select__option[aria-selected="true"] {
+  background: #FFF7ED;
+  color: var(--orange-dark);
+  font-weight: 800;
+}
+.application-form .custom-select__empty { margin: 8px 4px 4px; color: var(--muted); font-size: 13px; }
 
 .field-wide { grid-column: 1 / -1; }
 
@@ -757,5 +804,13 @@ footer {
   .field-wide { grid-column: auto; }
   .application-section { padding: 30px 14px; }
   .application-form { padding: 15px; }
+  .application-form .custom-select__panel { padding: 6px; }
+  .floating-publish-bubble {
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    min-height: 48px;
+    padding: 11px 15px;
+    font-size: 13px;
+  }
   .company-inner { padding-top: 44px; padding-bottom: 48px; }
 }

@@ -10,6 +10,69 @@
     return fallback
   }
 
+  const customSelectConfigs = [
+    {
+      key: "city",
+      id: "job-city",
+      name: "city",
+      label: "Cidade",
+      placeholder: "Selecione...",
+      searchPlaceholder: "Buscar cidade...",
+      required: true,
+      options: [
+        "Caxias do Sul", "Porto Alegre", "Santa Maria", "Novo Hamburgo", "São Leopoldo",
+        "Rio Grande", "Passo Fundo", "Bento Gonçalves", "Santa Cruz do Sul", "Cachoeirinha",
+        "Alvorada", "Gravataí", "Canoas", "Pelotas", "Erechim", "Lajeado", "Ijuí", "Bagé",
+        "Farroupilha", "Sapiranga", "Esteio", "Santa Rosa", "Uruguaiana", "Cruz Alta",
+        "Carazinho", "Vacaria", "Tramandaí", "Torres", "São Borja", "Venâncio Aires",
+        "Guaíba", "Estância Velha", "Campo Bom", "Taquara", "Cachoeira do Sul",
+        "Santo Ângelo", "Frederico Westphalen", "São José do Norte", "São Gabriel",
+        "Três Passos", "Marau", "Capão da Canoa", "Charqueadas"
+      ]
+    },
+    {
+      key: "model",
+      id: "job-model",
+      name: "model",
+      label: "Modelo de trabalho",
+      placeholder: "Selecione...",
+      searchPlaceholder: "Buscar modelo...",
+      required: false,
+      options: ["Presencial", "Híbrido", "Remoto"]
+    },
+    {
+      key: "contractType",
+      id: "job-type",
+      name: "contractType",
+      label: "Tipo de contratação",
+      placeholder: "Selecione...",
+      searchPlaceholder: "Buscar tipo de vaga...",
+      required: true,
+      options: [
+        "CLT (Efetivo)", "Temporário", "Estágio", "PJ", "Autônomo", "Meio período",
+        "Contrato", "A combinar"
+      ]
+    }
+  ]
+
+  function customSelectMarkup (config) {
+    return `<div class="field">
+      <label for="${config.id}">${config.label}</label>
+      <div class="custom-select" data-custom-select="${config.key}" data-placeholder="${config.placeholder}">
+        <input type="hidden" name="${config.name}" data-custom-select-input${config.required ? " required" : ""}>
+        <button id="${config.id}" class="custom-select__trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="custom-select-${config.key}-panel">
+          <span class="custom-select__value">${config.placeholder}</span>
+          <svg class="custom-select__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <div id="custom-select-${config.key}-panel" class="custom-select__panel" hidden>
+          <input class="custom-select__search" type="search" placeholder="${config.searchPlaceholder}" aria-label="${config.searchPlaceholder}" autocomplete="off">
+          <div class="custom-select__options" role="listbox"></div>
+          <p class="custom-select__empty" hidden>Nenhuma opção encontrada</p>
+        </div>
+      </div>
+    </div>`
+  }
+
   const includeSearch = document.body.dataset.drawerSearch === "true"
   const searchView = includeSearch
     ? `<section id="drawer-search-view" aria-label="Buscar vagas" hidden>
@@ -22,51 +85,6 @@
     : ""
 
   document.body.insertAdjacentHTML("beforeend", `
-    <datalist id="rs-cities">
-      <option value="Caxias do Sul"></option>
-      <option value="Porto Alegre"></option>
-      <option value="Santa Maria"></option>
-      <option value="Novo Hamburgo"></option>
-      <option value="São Leopoldo"></option>
-      <option value="Rio Grande"></option>
-      <option value="Passo Fundo"></option>
-      <option value="Bento Gonçalves"></option>
-      <option value="Santa Cruz do Sul"></option>
-      <option value="Cachoeirinha"></option>
-      <option value="Alvorada"></option>
-      <option value="Gravataí"></option>
-      <option value="Canoas"></option>
-      <option value="Pelotas"></option>
-      <option value="Erechim"></option>
-      <option value="Lajeado"></option>
-      <option value="Ijuí"></option>
-      <option value="Bagé"></option>
-      <option value="Farroupilha"></option>
-      <option value="Sapiranga"></option>
-      <option value="Esteio"></option>
-      <option value="Santa Rosa"></option>
-      <option value="Uruguaiana"></option>
-      <option value="Cruz Alta"></option>
-      <option value="Carazinho"></option>
-      <option value="Vacaria"></option>
-      <option value="Tramandaí"></option>
-      <option value="Torres"></option>
-      <option value="São Borja"></option>
-      <option value="Venâncio Aires"></option>
-      <option value="Guaíba"></option>
-      <option value="Estância Velha"></option>
-      <option value="Campo Bom"></option>
-      <option value="Taquara"></option>
-      <option value="Cachoeira do Sul"></option>
-      <option value="Santo Ângelo"></option>
-      <option value="Frederico Westphalen"></option>
-      <option value="São José do Norte"></option>
-      <option value="São Gabriel"></option>
-      <option value="Três Passos"></option>
-      <option value="Marau"></option>
-      <option value="Capão da Canoa"></option>
-      <option value="Charqueadas"></option>
-    </datalist>
     <dialog id="site-drawer" class="site-drawer" aria-labelledby="drawer-title">
       <div class="drawer-header">
         <h2 id="drawer-title">Menu</h2>
@@ -94,32 +112,13 @@
                   <label for="job-role">Cargo</label>
                   <input id="job-role" name="role" type="text" maxlength="160" required>
                 </div>
-                <div class="field">
-                  <label for="job-city">Cidade</label>
-                  <input id="job-city" name="city" type="text" maxlength="120" list="rs-cities" required>
-                </div>
+                ${customSelectMarkup(customSelectConfigs[0])}
                 <div class="field">
                   <label for="job-salary">Salário</label>
                   <input id="job-salary" name="salary" type="text" maxlength="120" placeholder="Ex.: R$ 2.500,00 ou a combinar">
                 </div>
-                <div class="field">
-                  <label for="job-model">Modelo de trabalho</label>
-                  <input id="job-model" name="model" type="text" maxlength="100" placeholder="Presencial, híbrido ou remoto">
-                </div>
-                <div class="field">
-                  <label for="job-type">Tipo de contratação</label>
-                  <select id="job-type" name="contractType" required>
-                    <option value="">Selecione...</option>
-                    <option>CLT (Efetivo)</option>
-                    <option>Temporário</option>
-                    <option>Estágio</option>
-                    <option>PJ</option>
-                    <option>Autônomo</option>
-                    <option>Meio período</option>
-                    <option>Contrato</option>
-                    <option>A combinar</option>
-                  </select>
-                </div>
+                ${customSelectMarkup(customSelectConfigs[1])}
+                ${customSelectMarkup(customSelectConfigs[2])}
                 <div class="field">
                   <label for="job-schedule">Horário / turno</label>
                   <input id="job-schedule" name="schedule" type="text" maxlength="200">
@@ -178,10 +177,169 @@
   const menuToggle = document.getElementById("mobile-menu-toggle")
   const searchTrigger = siteNavigation.querySelector("[data-drawer-view=search]")
   let drawerScrollY = 0
+  let activeCustomSelect = null
+
+  function normalizeSelectText (value) {
+    return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  }
+
+  function filterCustomSelect (wrapper) {
+    const query = normalizeSelectText(wrapper.querySelector(".custom-select__search").value.trim())
+    let visible = 0
+    wrapper.querySelectorAll(".custom-select__option").forEach(function (option) {
+      const matches = !query || normalizeSelectText(option.dataset.value).includes(query)
+      option.hidden = !matches
+      if (matches) { visible += 1 }
+    })
+    const empty = wrapper.querySelector(".custom-select__empty")
+    if (empty) { empty.hidden = visible !== 0 }
+  }
+
+  function closeCustomSelect (wrapper, restoreFocus) {
+    if (!wrapper) { return }
+    const panel = wrapper.querySelector(".custom-select__panel")
+    const trigger = wrapper.querySelector(".custom-select__trigger")
+    panel.hidden = true
+    trigger.setAttribute("aria-expanded", "false")
+    wrapper.classList.remove("is-open")
+    wrapper.querySelector(".custom-select__search").value = ""
+    filterCustomSelect(wrapper)
+    if (activeCustomSelect === wrapper) { activeCustomSelect = null }
+    if (restoreFocus) { trigger.focus({ preventScroll: true }) }
+  }
+
+  function closeAllCustomSelects () {
+    document.querySelectorAll(".custom-select.is-open").forEach(function (wrapper) {
+      closeCustomSelect(wrapper)
+    })
+  }
+
+  function positionCustomSelect (wrapper) {
+    const panel = wrapper.querySelector(".custom-select__panel")
+    const options = wrapper.querySelector(".custom-select__options")
+    const trigger = wrapper.querySelector(".custom-select__trigger")
+    const drawerRect = drawerContent.getBoundingClientRect()
+    const triggerRect = trigger.getBoundingClientRect()
+    const spaceBelow = drawerRect.bottom - triggerRect.bottom - 10
+    const spaceAbove = triggerRect.top - drawerRect.top - 10
+    const openBelow = spaceBelow >= 150 || spaceBelow >= spaceAbove
+    const available = Math.max(spaceBelow, spaceAbove)
+    const maxHeight = Math.max(96, Math.min(260, available))
+    panel.classList.toggle("is-above", !openBelow)
+    panel.style.top = openBelow ? "calc(100% + 6px)" : "auto"
+    panel.style.bottom = openBelow ? "auto" : "calc(100% + 6px)"
+    panel.style.setProperty("--custom-select-max", `${maxHeight}px`)
+    options.style.maxHeight = `${Math.max(64, maxHeight - 58)}px`
+  }
+
+  function openCustomSelect (wrapper) {
+    closeAllCustomSelects()
+    const panel = wrapper.querySelector(".custom-select__panel")
+    const trigger = wrapper.querySelector(".custom-select__trigger")
+    const search = wrapper.querySelector(".custom-select__search")
+    panel.hidden = false
+    trigger.setAttribute("aria-expanded", "true")
+    wrapper.classList.add("is-open")
+    activeCustomSelect = wrapper
+    positionCustomSelect(wrapper)
+    search.value = ""
+    filterCustomSelect(wrapper)
+    search.focus({ preventScroll: true })
+  }
+
+  function toggleCustomSelect (wrapper) {
+    if (activeCustomSelect === wrapper) {
+      closeCustomSelect(wrapper, true)
+    } else {
+      openCustomSelect(wrapper)
+    }
+  }
+
+  function selectCustomOption (wrapper, option) {
+    const input = wrapper.querySelector("[data-custom-select-input]")
+    const trigger = wrapper.querySelector(".custom-select__trigger")
+    input.value = option.dataset.value
+    wrapper.querySelector(".custom-select__value").textContent = option.dataset.value
+    wrapper.querySelectorAll(".custom-select__option").forEach(function (item) {
+      item.setAttribute("aria-selected", String(item === option))
+    })
+    trigger.removeAttribute("aria-invalid")
+    closeCustomSelect(wrapper, true)
+  }
+
+  function resetCustomSelects () {
+    document.querySelectorAll(".custom-select").forEach(function (wrapper) {
+      const input = wrapper.querySelector("[data-custom-select-input]")
+      input.value = ""
+      wrapper.querySelector(".custom-select__value").textContent = wrapper.dataset.placeholder
+      wrapper.querySelector(".custom-select__trigger").removeAttribute("aria-invalid")
+      wrapper.querySelectorAll(".custom-select__option").forEach(function (option) {
+        option.setAttribute("aria-selected", "false")
+      })
+    })
+    closeAllCustomSelects()
+  }
+
+  function validateCustomSelects () {
+    let firstInvalid = null
+    document.querySelectorAll(".custom-select").forEach(function (wrapper) {
+      const input = wrapper.querySelector("[data-custom-select-input]")
+      const trigger = wrapper.querySelector(".custom-select__trigger")
+      if (input.hasAttribute("required") && !input.value) {
+        trigger.setAttribute("aria-invalid", "true")
+        if (!firstInvalid) { firstInvalid = trigger }
+      } else {
+        trigger.removeAttribute("aria-invalid")
+      }
+    })
+    if (firstInvalid) { firstInvalid.focus({ preventScroll: true }) }
+    return !firstInvalid
+  }
+
+  function setupCustomSelects () {
+    document.querySelectorAll(".custom-select").forEach(function (wrapper) {
+      const config = customSelectConfigs.find(function (item) {
+        return item.key === wrapper.dataset.customSelect
+      })
+      const options = wrapper.querySelector(".custom-select__options")
+      const trigger = wrapper.querySelector(".custom-select__trigger")
+      const search = wrapper.querySelector(".custom-select__search")
+      config.options.forEach(function (value) {
+        const option = document.createElement("button")
+        option.type = "button"
+        option.className = "custom-select__option"
+        option.setAttribute("role", "option")
+        option.setAttribute("aria-selected", "false")
+        option.dataset.value = value
+        option.textContent = value
+        options.appendChild(option)
+      })
+      trigger.addEventListener("click", function () { toggleCustomSelect(wrapper) })
+      search.addEventListener("input", function () { filterCustomSelect(wrapper) })
+      wrapper.addEventListener("click", function (event) {
+        const option = event.target.closest(".custom-select__option")
+        if (option) { selectCustomOption(wrapper, option) }
+      })
+    })
+    document.addEventListener("pointerdown", function (event) {
+      if (activeCustomSelect && !event.target.closest(".custom-select")) { closeAllCustomSelects() }
+    })
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && activeCustomSelect) {
+        event.preventDefault()
+        closeCustomSelect(activeCustomSelect, true)
+      }
+    }, true)
+    window.addEventListener("resize", closeAllCustomSelects)
+    drawerContent.addEventListener("scroll", closeAllCustomSelects, { passive: true })
+  }
+
+  setupCustomSelects()
 
   if (!includeSearch && !existingSearchInput && searchTrigger) { searchTrigger.hidden = true }
 
   function resetDrawer () {
+    closeAllCustomSelects()
     siteDrawer.dataset.state = "menu"
     delete siteDrawer.dataset.view
     drawerTitle.textContent = "Menu"
@@ -242,25 +400,6 @@
     })
   })
 
-  document.querySelectorAll(".floating-publish-bubble").forEach(function (bubble) {
-    let tooltipTimer
-    bubble.addEventListener("pointerdown", function (event) {
-      if (event.pointerType !== "touch") { return }
-      clearTimeout(tooltipTimer)
-      bubble.classList.add("is-tooltip-visible")
-    })
-    bubble.addEventListener("pointerup", function (event) {
-      if (event.pointerType !== "touch") { return }
-      tooltipTimer = setTimeout(function () {
-        bubble.classList.remove("is-tooltip-visible")
-      }, 1800)
-    })
-    bubble.addEventListener("pointercancel", function () {
-      clearTimeout(tooltipTimer)
-      bubble.classList.remove("is-tooltip-visible")
-    })
-  })
-
   siteNavigation.addEventListener("click", function (event) {
     const trigger = event.target.closest("[data-drawer-view]")
     if (!trigger) { return }
@@ -303,8 +442,14 @@
     })
   }
 
+  companyForm.addEventListener("reset", resetCustomSelects)
+
   companyForm.addEventListener("submit", async function (event) {
     event.preventDefault()
+    if (!validateCustomSelects()) {
+      applicationStatus.textContent = "Preencha os campos obrigatórios."
+      return
+    }
     submitApplicationButton.disabled = true
     applicationStatus.textContent = "Enviando solicitação..."
     try {
