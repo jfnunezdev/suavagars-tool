@@ -23,6 +23,7 @@ test("public manifest uses the root identity and the green theme", function () {
   assert.equal(manifest.start_url, "/")
   assert.equal(manifest.scope, "/")
   assert.equal(manifest.short_name, "SUA VAGA")
+  assert.equal(manifest.description, "Vagas de emprego no Rio Grande do Sul no Sua Vaga RS.")
   assert.equal(manifest.theme_color, "#16a34a")
   assert.ok(isInsideScope(manifest.start_url, manifest.scope))
   assert.ok(!JSON.stringify(manifest).includes("?pwa="))
@@ -72,7 +73,7 @@ test("the two apps have distinct short names, icons and theme colors", function 
 
 test("public service worker never serves private pages or uses stale query flags", function () {
   const source = readFile("public/sw.js")
-  assert.match(source, /svrs-public-v3/)
+  assert.match(source, /svrs-public-v5/)
   assert.match(source, /PRIVATE_PATHS/)
   assert.match(source, /\/admin/)
   assert.match(source, /\/ferramenta/)
@@ -84,7 +85,8 @@ test("public service worker never serves private pages or uses stale query flags
 
 test("admin service worker uses the /admin/ scope and never falls back to the public index", function () {
   const source = readFile("admin/sw.js")
-  assert.match(source, /svrs-admin-v4/)
+  assert.match(source, /svrs-admin-v6/)
+  assert.match(source, /\/public\/logo-triangulo\.png/)
   assert.match(source, /"\/admin\/"/)
   assert.match(source, /caches\.match\("\/admin\/index\.html"\)/)
   assert.match(source, /addEventListener\("push"/)
@@ -100,6 +102,7 @@ test("the admin page has one login, one manifest and the two views", function ()
   const scripts = readFile("admin/index.js")
   assert.match(html, /href="\/admin\/manifest\.json"/)
   assert.match(html, /href="\/admin\/icon-192\.png"/)
+  assert.match(html, /<img src="\/public\/logo-triangulo\.png" alt="" aria-hidden="true" \/>/)
   assert.equal((html.match(/id="login-form"/g) || []).length, 1)
   assert.match(html, /id="view-editor"/)
   assert.match(html, /id="view-aprovacao"/)
@@ -157,18 +160,47 @@ test("the public HTML points at the green theme and its own manifest", function 
   assert.ok(!html.includes("?pwa="))
 })
 
-test("public pages load the shared drawer and expose the Divulgue CTA", function () {
+test("public site copy covers Rio Grande do Sul instead of Caxias do Sul", function () {
+  const index = readFile("index.html")
+  assert.match(index, /<title>SUAVAGARS - Vagas de emprego no Rio Grande do Sul<\/title>/)
+  assert.match(index, /content="Encontre vagas de emprego no Rio Grande do Sul no Sua Vaga RS\."/)
+  const vagas = readFile("vagas.html")
+  assert.match(vagas, /content="Encontre vagas de emprego no Rio Grande do Sul no SuaVaga RS\."/)
+  for (const page of ["index.html", "vagas.html", "termos.html"]) {
+    const html = readFile(page)
+    assert.match(html, /<p class="location">Vagas de emprego no Rio Grande do Sul<\/p>/, page)
+    assert.doesNotMatch(html, /Caxias do Sul/, page)
+  }
+})
+
+test("city fields start empty and suggest Rio Grande do Sul cities", function () {
+  const drawer = readFile("site-drawer.js")
+  assert.match(drawer, /id="job-city" name="city" type="text" maxlength="120" list="rs-cities" required>/)
+  assert.doesNotMatch(drawer, /value="Caxias do Sul - RS"/)
+  assert.match(drawer, /<datalist id="rs-cities">/)
+  assert.match(drawer, /option value="Porto Alegre"/)
+  assert.match(drawer, /option value="Caxias do Sul"/)
+  const admin = readFile("admin/index.html")
+  assert.match(admin, /id="city" type="text" list="rs-cities" autocomplete="address-level2" \/>/)
+  assert.match(admin, /<datalist id="rs-cities">/)
+  assert.doesNotMatch(admin, /id="city"[^>]*value=/)
+  assert.ok(!readFile("admin/editor.js").includes("cityInput.value.trim() || \"Caxias do Sul - RS\""))
+})
+
+test("public pages load the shared drawer and expose the floating publish bubble", function () {
   for (const page of ["index.html", "vagas.html", "termos.html"]) {
     const html = readFile(page)
     assert.match(html, /src="\/site-drawer\.js"/, page)
-    assert.match(html, /data-drawer-open="application"/, page)
-    assert.match(html, /class="cta-label">Divulgue</, page)
-    assert.match(html, /aria-label="Divulgue sua vaga no Sua Vaga RS/, page)
+    assert.match(html, /class="floating-publish-bubble" data-drawer-open="application"/, page)
+    assert.match(html, /class="floating-publish-bubble__tooltip" role="tooltip">DIVULGA TU VAGA - É grátis</, page)
+    assert.doesNotMatch(html, /class="fixed-publish-cta"/, page)
+    assert.doesNotMatch(html, /class="header-cta"/, page)
   }
   const drawer = readFile("site-drawer.js")
   assert.match(drawer, /id="company-form"/)
   assert.match(drawer, /SVRSDrawer/)
   assert.match(drawer, /api\/candidaturas/)
+  assert.match(drawer, /\.floating-publish-bubble/)
   assert.ok(!readFile("index.html").includes("<dialog id=\"site-drawer\""))
 })
 
@@ -185,7 +217,8 @@ test("public job cards include a WhatsApp share action and permalink handling", 
   const css = readFile("public.css")
   assert.match(css, /\.job-actions/)
   assert.match(css, /\.share-button/)
-  assert.match(css, /\.header-cta/)
+  assert.match(css, /\.floating-publish-bubble/)
+  assert.match(css, /\.floating-publish-bubble__tooltip/)
 })
 
 test("the wordmark keeps RS orange at every viewport width", function () {
@@ -196,6 +229,19 @@ test("the wordmark keeps RS orange at every viewport width", function () {
   const css = readFile("public.css")
   assert.match(css, /\.brand-suffix \{ color: var\(--orange\); \}/)
   assert.doesNotMatch(css, /\.brand-name \{[^}]*linear-gradient/)
+})
+
+test("public pages use the triangle logo as the brand mark", function () {
+  for (const page of ["index.html", "vagas.html", "termos.html"]) {
+    const html = readFile(page)
+    assert.match(html, /src="\/public\/logo-triangulo\.png" alt="" class="brand-logo"/, page)
+    assert.doesNotMatch(html, /src="\/public\/icone-app\.png"/, page)
+    assert.doesNotMatch(html, /src="logo\.png"/, page)
+  }
+  const sw = readFile("public/sw.js")
+  assert.match(sw, /\/public\/logo-triangulo\.png/)
+  assert.doesNotMatch(sw, /\/public\/icone-app\.png/)
+  assert.ok(fs.existsSync(path.join(root, "public/logo-triangulo.png")))
 })
 
 test("web-push is optional at module load so candidaturas cannot crash", function () {
@@ -296,4 +342,32 @@ test("a queued chime survives focus changes and reminder shutdown", function () 
   const stopReminder = source.match(/function stopPendingReminder \(\) \{[\s\S]*?\n {2}\}/)
   assert.ok(stopReminder)
   assert.doesNotMatch(stopReminder[0], /notificationSoundQueued = false/)
+})
+
+test("the local server reads the private password from a gitignored .env.local", function () {
+  const server = readFile("local-server.js")
+  const ignore = readFile(".gitignore")
+  assert.match(server, /function loadLocalEnv \(\)/)
+  assert.match(server, /if \(process\.env\.GESTOR_PASSWORD\) \{ return \}/)
+  assert.match(server, /path\.join\(root, "\.env\.local"\)/)
+  assert.match(server, /key !== "GESTOR_PASSWORD"/)
+  assert.match(ignore, /^\/\.env\.local$/m)
+  assert.ok(!server.includes("console.log(process.env.GESTOR_PASSWORD)"))
+})
+
+test("login handles wrong passwords and malformed responses without JSON parser errors", function () {
+  const auth = readFile("admin/auth.js")
+  const api = readFile("api/gestor-auth.js")
+  assert.match(auth, /async function readJsonResponse \(response\)/)
+  assert.match(auth, /contentType\.includes\("application\/json"\)/)
+  assert.match(auth, /response\.status === 401/)
+  assert.match(auth, /loginStatus\.textContent = "Senha incorreta"/)
+  assert.match(auth, /loginStatus\.textContent = result && result\.error \? result\.error : "Não foi possível entrar\."/)
+  assert.match(auth, /return readJsonResponse\(response\)/)
+  assert.match(api, /sendJson\(response, 401, \{ error: "Senha incorreta" \}\)/)
+  assert.match(api, /\.env\.local \(local\) ou na Vercel/)
+  assert.ok(!auth.includes("const result = await response.json()"))
+  assert.ok(!auth.includes("error.message"))
+  assert.ok(!auth.includes("Failed to execute"))
+  assert.ok(!api.includes("Senha incorreta."))
 })

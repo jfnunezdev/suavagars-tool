@@ -22,6 +22,51 @@
     : ""
 
   document.body.insertAdjacentHTML("beforeend", `
+    <datalist id="rs-cities">
+      <option value="Caxias do Sul"></option>
+      <option value="Porto Alegre"></option>
+      <option value="Santa Maria"></option>
+      <option value="Novo Hamburgo"></option>
+      <option value="São Leopoldo"></option>
+      <option value="Rio Grande"></option>
+      <option value="Passo Fundo"></option>
+      <option value="Bento Gonçalves"></option>
+      <option value="Santa Cruz do Sul"></option>
+      <option value="Cachoeirinha"></option>
+      <option value="Alvorada"></option>
+      <option value="Gravataí"></option>
+      <option value="Canoas"></option>
+      <option value="Pelotas"></option>
+      <option value="Erechim"></option>
+      <option value="Lajeado"></option>
+      <option value="Ijuí"></option>
+      <option value="Bagé"></option>
+      <option value="Farroupilha"></option>
+      <option value="Sapiranga"></option>
+      <option value="Esteio"></option>
+      <option value="Santa Rosa"></option>
+      <option value="Uruguaiana"></option>
+      <option value="Cruz Alta"></option>
+      <option value="Carazinho"></option>
+      <option value="Vacaria"></option>
+      <option value="Tramandaí"></option>
+      <option value="Torres"></option>
+      <option value="São Borja"></option>
+      <option value="Venâncio Aires"></option>
+      <option value="Guaíba"></option>
+      <option value="Estância Velha"></option>
+      <option value="Campo Bom"></option>
+      <option value="Taquara"></option>
+      <option value="Cachoeira do Sul"></option>
+      <option value="Santo Ângelo"></option>
+      <option value="Frederico Westphalen"></option>
+      <option value="São José do Norte"></option>
+      <option value="São Gabriel"></option>
+      <option value="Três Passos"></option>
+      <option value="Marau"></option>
+      <option value="Capão da Canoa"></option>
+      <option value="Charqueadas"></option>
+    </datalist>
     <dialog id="site-drawer" class="site-drawer" aria-labelledby="drawer-title">
       <div class="drawer-header">
         <h2 id="drawer-title">Menu</h2>
@@ -51,7 +96,7 @@
                 </div>
                 <div class="field">
                   <label for="job-city">Cidade</label>
-                  <input id="job-city" name="city" type="text" maxlength="120" value="Caxias do Sul - RS" required>
+                  <input id="job-city" name="city" type="text" maxlength="120" list="rs-cities" required>
                 </div>
                 <div class="field">
                   <label for="job-salary">Salário</label>
@@ -194,6 +239,25 @@
   document.querySelectorAll("[data-drawer-open]").forEach(function (button) {
     button.addEventListener("click", function () {
       openDrawer(button.getAttribute("data-drawer-open") || "menu")
+    })
+  })
+
+  document.querySelectorAll(".floating-publish-bubble").forEach(function (bubble) {
+    let tooltipTimer
+    bubble.addEventListener("pointerdown", function (event) {
+      if (event.pointerType !== "touch") { return }
+      clearTimeout(tooltipTimer)
+      bubble.classList.add("is-tooltip-visible")
+    })
+    bubble.addEventListener("pointerup", function (event) {
+      if (event.pointerType !== "touch") { return }
+      tooltipTimer = setTimeout(function () {
+        bubble.classList.remove("is-tooltip-visible")
+      }, 1800)
+    })
+    bubble.addEventListener("pointercancel", function () {
+      clearTimeout(tooltipTimer)
+      bubble.classList.remove("is-tooltip-visible")
     })
   })
 

@@ -1,11 +1,11 @@
 "use strict"
 
-const CACHE_NAME = "svrs-public-v3"
+const CACHE_NAME = "svrs-public-v5"
 const APP_SHELL = [
   "/",
   "/index.html",
   "/public.css",
-  "/logo.png",
+  "/public/logo-triangulo.png",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png"

@@ -12,6 +12,37 @@ const pushSubscriptionsHandler = require("./api/push-subscriptions")
 
 const root = __dirname
 
+function loadLocalEnv () {
+  if (process.env.GESTOR_PASSWORD) { return }
+  const envPath = path.join(root, ".env.local")
+  let contents
+  try {
+    contents = fs.readFileSync(envPath, "utf8")
+  } catch (error) {
+    if (error.code === "ENOENT") { return }
+    throw error
+  }
+  for (const line of contents.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith("#")) { continue }
+    const separator = trimmed.indexOf("=")
+    if (separator === -1) { continue }
+    const key = trimmed.slice(0, separator).trim()
+    if (key !== "GESTOR_PASSWORD") { continue }
+    let value = trimmed.slice(separator + 1).trim()
+    if (
+      (value.startsWith("\"") && value.endsWith("\"")) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+    if (value) { process.env.GESTOR_PASSWORD = value }
+    return
+  }
+}
+
+loadLocalEnv()
+
 const RATE_LIMIT_WINDOW_MS = 60 * 1000
 const RATE_LIMIT_MAX_REQUESTS = 60
 const rateLimitMap = new Map()

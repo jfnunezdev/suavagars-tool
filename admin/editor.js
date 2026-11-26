@@ -1616,7 +1616,7 @@
     fillFromLink(linkInput.value.trim())
     const company = companyInput.value.trim() || "Empresa Confidencial"
     const role = roleInput.value.trim() || "Cargo não identificado"
-    const city = cityInput.value.trim() || "Caxias do Sul - RS"
+    const city = cityInput.value.trim() || "A consultar"
     const salary = salaryInput.value.trim() || "A combinar / Direto com a empresa"
     const contractType = contractTypeInput.value.trim() || "Efetivo - CLT"
     const schedule = scheduleInput.value.trim() || "Horário comercial - Consultar"
@@ -1624,7 +1624,7 @@
     const logo = document.querySelector("header img")
     if (!logo.complete || !logo.naturalWidth) {
       imageStatus.textContent =
-        "Não foi possível carregar logo.png. Confira se o arquivo está na mesma pasta do index.html."
+        "Não foi possível carregar o logotipo. Confira se o arquivo está disponível."
       return
     }
 

@@ -1,6 +1,6 @@
 "use strict"
 
-const CACHE_NAME = "svrs-admin-v4"
+const CACHE_NAME = "svrs-admin-v6"
 const APP_SHELL = [
   "/admin/",
   "/admin/index.html",
@@ -9,10 +9,10 @@ const APP_SHELL = [
   "/admin/icon-192.png",
   "/admin/icon-512.png",
   "/styles.css",
-  "/logo.png"
+  "/public/logo-triangulo.png"
 ]
 
-const SHARED_ASSETS = ["/styles.css", "/logo.png"]
+const SHARED_ASSETS = ["/styles.css", "/public/logo-triangulo.png"]
 
 function isAdminRequest (pathname) {
   return pathname.startsWith("/admin/") || SHARED_ASSETS.includes(pathname)

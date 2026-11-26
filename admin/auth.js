@@ -28,6 +28,16 @@
     window.dispatchEvent(new CustomEvent("svrs-auth", { detail: { authenticated } }))
   }
 
+  async function readJsonResponse (response) {
+    const contentType = response.headers.get("content-type") || ""
+    if (!contentType.includes("application/json")) { return null }
+    try {
+      return await response.json()
+    } catch {
+      return null
+    }
+  }
+
   function requestNotificationPermission () {
     if (!("Notification" in window) || Notification.permission !== "default") {
       return Promise.resolve("Notification" in window ? Notification.permission : "unsupported")
@@ -51,9 +61,7 @@
     loginPanel.hidden = false
     authenticatedApp.hidden = true
     resetPasswordToggle()
-    if (message) {
-      loginStatus.textContent = message
-    }
+    loginStatus.textContent = message || ""
     password.focus()
     announce(false)
   }
@@ -90,15 +98,20 @@
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ password: password.value })
       })
-      const result = await response.json()
+      if (response.status === 401) {
+        loginStatus.textContent = "Senha incorreta"
+        return
+      }
+      const result = await readJsonResponse(response)
       if (!response.ok) {
-        throw new Error(result && result.error ? result.error : "Não foi possível entrar.")
+        loginStatus.textContent = result && result.error ? result.error : "Não foi possível entrar."
+        return
       }
       loginForm.reset()
       loginStatus.textContent = ""
       showApp()
-    } catch (error) {
-      loginStatus.textContent = error.message || "Não foi possível entrar."
+    } catch {
+      loginStatus.textContent = "Não foi possível entrar."
     } finally {
       loginButton.disabled = false
       loginButton.setAttribute("aria-busy", "false")
@@ -131,16 +144,16 @@
       if (!response.ok) {
         throw new Error("Não foi possível verificar o acesso.")
       }
-      return response.json()
+      return readJsonResponse(response)
     })
     .then(function (data) {
-      if (data.authenticated) {
+      if (data && data.authenticated) {
         showApp()
       } else {
         showLogin()
       }
     })
-    .catch(function (error) {
-      showLogin(error.message)
+    .catch(function () {
+      showLogin()
     })
 })()

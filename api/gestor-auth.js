@@ -89,7 +89,7 @@ async function handler (request, response) {
 
   const expectedPassword = process.env.GESTOR_PASSWORD
   if (!expectedPassword) {
-    sendJson(response, 503, { error: "Configure a variável GESTOR_PASSWORD na Vercel para habilitar o painel." })
+    sendJson(response, 503, { error: "Configure GESTOR_PASSWORD no .env.local (local) ou na Vercel para habilitar o painel." })
     return
   }
 
@@ -97,7 +97,7 @@ async function handler (request, response) {
     const body = await readJsonBody(request)
     if (!body || typeof body.password !== "string" ||
         !constantTimeEqual(body.password, expectedPassword)) {
-      sendJson(response, 401, { error: "Senha incorreta." })
+      sendJson(response, 401, { error: "Senha incorreta" })
       return
     }
     response.setHeader("Set-Cookie", createSessionCookie(request, expectedPassword))

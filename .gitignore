@@ -3,3 +3,4 @@
 /data/solicitacoes.json
 /data/solicitacoes.json.*.tmp
 /node_modules/
+/.env.local

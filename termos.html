@@ -11,17 +11,9 @@
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <a href="index.html" aria-label="SuaVaga RS - página inicial"><img src="logo.png" alt="" class="brand-logo"></a>
+      <a href="index.html" aria-label="SuaVaga RS - página inicial"><img src="/public/logo-triangulo.png" alt="" class="brand-logo"></a>
       <p class="brand-name">SUAVAGA<span class="brand-suffix">RS</span></p>
-      <p class="location">Vagas de emprego em Caxias do Sul</p>
-      <button type="button" class="header-cta" data-drawer-open="application" aria-label="Divulgue sua vaga no Sua Vaga RS (abre o formulário)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 11v2a1 1 0 0 0 1 1h3l8 5V5L7 10H4a1 1 0 0 0-1 1Z"></path>
-          <path d="M18 8a5 5 0 0 1 0 8"></path>
-          <path d="M7 14v4a2 2 0 0 0 4 0"></path>
-        </svg>
-        <span class="cta-label">Divulgue</span>
-      </button>
+      <p class="location">Vagas de emprego no Rio Grande do Sul</p>
       <button id="mobile-menu-toggle" class="mobile-menu-toggle" type="button" aria-controls="site-navigation" aria-expanded="false" aria-label="Abrir menu de navegação">
         <span aria-hidden="true">☰</span>
       </button>
@@ -58,6 +50,16 @@
     <p class="disclaimer">Aviso Legal: O SuaVaga RS é apenas um divulgador de vagas. Não somos a empresa contratante, não recebemos currículos e não participamos do processo seletivo. Todas as vagas são redirecionadas para sites externos de emprego. Verifique sempre as informações diretamente no site oficial da vaga antes de se candidatar.</p>
     <a class="footer-link" href="termos.html">Termos de Uso</a>
   </footer>
+
+  <button type="button" class="floating-publish-bubble" data-drawer-open="application" aria-label="Divulgue sua vaga no Sua Vaga RS. É grátis." aria-describedby="publish-bubble-tooltip">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 11v2a1 1 0 0 0 1 1h3l8 5V5L7 10H4a1 1 0 0 0-1 1Z"></path>
+      <path d="M18 8a5 5 0 0 1 0 8"></path>
+      <path d="M7 14v4a2 2 0 0 0 4 0"></path>
+    </svg>
+    <span id="publish-bubble-tooltip" class="floating-publish-bubble__tooltip" role="tooltip">DIVULGA TU VAGA - É grátis</span>
+  </button>
+
   <script src="/site-drawer.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@
   </head>
   <body class="admin-page">
     <header class="manager-brand">
-      <img src="/logo.png" alt="" aria-hidden="true" />
+      <img src="/public/logo-triangulo.png" alt="" aria-hidden="true" />
       <h1>PAINEL SUA VAGA</h1>
       <p>Editor de posts e aprovação de vagas</p>
       <button id="notification-enable" class="notification-enable notification-fallback" type="button" hidden>
@@ -149,7 +149,52 @@
           </div>
           <div class="field">
             <label for="city">Cidade</label>
-            <input id="city" type="text" value="A consultar" autocomplete="address-level2" />
+            <input id="city" type="text" list="rs-cities" autocomplete="address-level2" />
+            <datalist id="rs-cities">
+              <option value="Caxias do Sul"></option>
+              <option value="Porto Alegre"></option>
+              <option value="Santa Maria"></option>
+              <option value="Novo Hamburgo"></option>
+              <option value="São Leopoldo"></option>
+              <option value="Rio Grande"></option>
+              <option value="Passo Fundo"></option>
+              <option value="Bento Gonçalves"></option>
+              <option value="Santa Cruz do Sul"></option>
+              <option value="Cachoeirinha"></option>
+              <option value="Alvorada"></option>
+              <option value="Gravataí"></option>
+              <option value="Canoas"></option>
+              <option value="Pelotas"></option>
+              <option value="Erechim"></option>
+              <option value="Lajeado"></option>
+              <option value="Ijuí"></option>
+              <option value="Bagé"></option>
+              <option value="Farroupilha"></option>
+              <option value="Sapiranga"></option>
+              <option value="Esteio"></option>
+              <option value="Santa Rosa"></option>
+              <option value="Uruguaiana"></option>
+              <option value="Cruz Alta"></option>
+              <option value="Carazinho"></option>
+              <option value="Vacaria"></option>
+              <option value="Tramandaí"></option>
+              <option value="Torres"></option>
+              <option value="São Borja"></option>
+              <option value="Venâncio Aires"></option>
+              <option value="Guaíba"></option>
+              <option value="Estância Velha"></option>
+              <option value="Campo Bom"></option>
+              <option value="Taquara"></option>
+              <option value="Cachoeira do Sul"></option>
+              <option value="Santo Ângelo"></option>
+              <option value="Frederico Westphalen"></option>
+              <option value="São José do Norte"></option>
+              <option value="São Gabriel"></option>
+              <option value="Três Passos"></option>
+              <option value="Marau"></option>
+              <option value="Capão da Canoa"></option>
+              <option value="Charqueadas"></option>
+            </datalist>
           </div>
           <div class="field">
             <label for="model">Modelo</label>
