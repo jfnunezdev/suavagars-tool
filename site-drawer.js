@@ -185,7 +185,7 @@
     return Boolean(event && (event.pointerType === "touch" || event.pointerType === "pen"))
   }
 
-  function shouldFocusCustomSelectSearch () {
+  function shouldUseDesktopFocus () {
     return !window.matchMedia || window.matchMedia("(hover: hover) and (pointer: fine)").matches
   }
 
@@ -243,6 +243,10 @@
     options.style.maxHeight = `${Math.max(64, maxHeight - 58)}px`
   }
 
+  function handleCustomSelectViewportChange () {
+    if (activeCustomSelect) { positionCustomSelect(activeCustomSelect) }
+  }
+
   function openCustomSelect (wrapper) {
     closeAllCustomSelects()
     const panel = wrapper.querySelector(".custom-select__panel")
@@ -256,7 +260,7 @@
     positionCustomSelect(wrapper)
     search.value = ""
     filterCustomSelect(wrapper)
-    if (shouldFocusCustomSelectSearch()) { search.focus({ preventScroll: true }) }
+    if (shouldUseDesktopFocus()) { search.focus({ preventScroll: true }) }
   }
 
   function toggleCustomSelect (wrapper) {
@@ -313,6 +317,7 @@
       const config = customSelectConfigs.find(function (item) {
         return item.key === wrapper.dataset.customSelect
       })
+      const panel = wrapper.querySelector(".custom-select__panel")
       const options = wrapper.querySelector(".custom-select__options")
       const trigger = wrapper.querySelector(".custom-select__trigger")
       const search = wrapper.querySelector(".custom-select__search")
@@ -326,6 +331,14 @@
         option.textContent = value
         options.appendChild(option)
       })
+      function stopCustomSelectPointerPropagation (event) {
+        event.stopPropagation()
+      }
+      function focusCustomSelectSearchOnTouch (event) {
+        event.stopPropagation()
+        if (event.type !== "touchstart" && !isTouchPointer(event)) { return }
+        search.focus({ preventScroll: true })
+      }
       trigger.addEventListener("pointerdown", function (event) {
         if (!isTouchPointer(event)) { return }
         customSelectPointerToggleAt = Date.now()
@@ -346,6 +359,14 @@
           toggleCustomSelect(wrapper)
         }
       })
+      panel.addEventListener("pointerdown", stopCustomSelectPointerPropagation)
+      if (typeof PointerEvent === "undefined") {
+        panel.addEventListener("touchstart", stopCustomSelectPointerPropagation, { passive: true })
+      }
+      search.addEventListener("pointerdown", focusCustomSelectSearchOnTouch)
+      if (typeof PointerEvent === "undefined") {
+        search.addEventListener("touchstart", focusCustomSelectSearchOnTouch, { passive: true })
+      }
       search.addEventListener("input", function () { filterCustomSelect(wrapper) })
       wrapper.addEventListener("click", function (event) {
         const option = event.target.closest(".custom-select__option")
@@ -355,8 +376,7 @@
     function handleCustomSelectOutsidePointer (event) {
       if (!activeCustomSelect) { return }
       if (Date.now() < customSelectIgnoreOutsideUntil) { return }
-      const target = event.target
-      if (target && typeof target.closest === "function" && target.closest(".custom-select")) { return }
+      if (event.target && activeCustomSelect.contains(event.target)) { return }
       closeAllCustomSelects()
     }
     document.addEventListener("pointerdown", handleCustomSelectOutsidePointer)
@@ -369,10 +389,11 @@
         closeCustomSelect(activeCustomSelect, true)
       }
     }, true)
-    window.addEventListener("resize", closeAllCustomSelects)
-    drawerContent.addEventListener("scroll", function () {
-      if (activeCustomSelect) { positionCustomSelect(activeCustomSelect) }
-    }, { passive: true })
+    window.addEventListener("resize", handleCustomSelectViewportChange)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleCustomSelectViewportChange)
+    }
+    drawerContent.addEventListener("scroll", handleCustomSelectViewportChange, { passive: true })
   }
 
   setupCustomSelects()
@@ -414,7 +435,9 @@
     drawerTitle.textContent = "Envie uma vaga para análise"
     if (drawerSearchView) { drawerSearchView.hidden = true }
     drawerApplicationView.hidden = false
-    drawerApplicationView.querySelector("input").focus({ preventScroll: true })
+    if (shouldUseDesktopFocus()) {
+      drawerApplicationView.querySelector("input").focus({ preventScroll: true })
+    }
   }
 
   function showSearchView () {
@@ -426,7 +449,7 @@
     drawerTitle.textContent = "Buscar"
     drawerSearchView.hidden = false
     drawerApplicationView.hidden = true
-    searchInput.focus({ preventScroll: true })
+    if (shouldUseDesktopFocus()) { searchInput.focus({ preventScroll: true }) }
   }
 
   if (menuToggle) {

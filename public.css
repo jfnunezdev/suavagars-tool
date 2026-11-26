@@ -581,6 +581,7 @@ body {
   border-color: #CBD5E1;
   border-radius: 8px;
   font-size: 14px;
+  touch-action: manipulation;
 }
 .application-form .custom-select__options {
   max-height: 180px;
