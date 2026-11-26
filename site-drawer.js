@@ -178,6 +178,16 @@
   const searchTrigger = siteNavigation.querySelector("[data-drawer-view=search]")
   let drawerScrollY = 0
   let activeCustomSelect = null
+  let customSelectIgnoreOutsideUntil = 0
+  let customSelectPointerToggleAt = 0
+
+  function isTouchPointer (event) {
+    return Boolean(event && (event.pointerType === "touch" || event.pointerType === "pen"))
+  }
+
+  function shouldFocusCustomSelectSearch () {
+    return !window.matchMedia || window.matchMedia("(hover: hover) and (pointer: fine)").matches
+  }
 
   function normalizeSelectText (value) {
     return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
@@ -205,6 +215,7 @@
     wrapper.querySelector(".custom-select__search").value = ""
     filterCustomSelect(wrapper)
     if (activeCustomSelect === wrapper) { activeCustomSelect = null }
+    customSelectIgnoreOutsideUntil = 0
     if (restoreFocus) { trigger.focus({ preventScroll: true }) }
   }
 
@@ -241,10 +252,11 @@
     trigger.setAttribute("aria-expanded", "true")
     wrapper.classList.add("is-open")
     activeCustomSelect = wrapper
+    customSelectIgnoreOutsideUntil = Date.now() + 250
     positionCustomSelect(wrapper)
     search.value = ""
     filterCustomSelect(wrapper)
-    search.focus({ preventScroll: true })
+    if (shouldFocusCustomSelectSearch()) { search.focus({ preventScroll: true }) }
   }
 
   function toggleCustomSelect (wrapper) {
@@ -314,16 +326,43 @@
         option.textContent = value
         options.appendChild(option)
       })
-      trigger.addEventListener("click", function () { toggleCustomSelect(wrapper) })
+      trigger.addEventListener("pointerdown", function (event) {
+        if (!isTouchPointer(event)) { return }
+        customSelectPointerToggleAt = Date.now()
+        event.preventDefault()
+        toggleCustomSelect(wrapper)
+      })
+      if (typeof PointerEvent === "undefined") {
+        trigger.addEventListener("touchstart", function (event) {
+          const now = Date.now()
+          if (now - customSelectPointerToggleAt < 300) { return }
+          customSelectPointerToggleAt = now
+          event.preventDefault()
+          toggleCustomSelect(wrapper)
+        }, { passive: false })
+      }
+      trigger.addEventListener("click", function (event) {
+        if (event.detail === 0 || Date.now() - customSelectPointerToggleAt > 600) {
+          toggleCustomSelect(wrapper)
+        }
+      })
       search.addEventListener("input", function () { filterCustomSelect(wrapper) })
       wrapper.addEventListener("click", function (event) {
         const option = event.target.closest(".custom-select__option")
         if (option) { selectCustomOption(wrapper, option) }
       })
     })
-    document.addEventListener("pointerdown", function (event) {
-      if (activeCustomSelect && !event.target.closest(".custom-select")) { closeAllCustomSelects() }
-    })
+    function handleCustomSelectOutsidePointer (event) {
+      if (!activeCustomSelect) { return }
+      if (Date.now() < customSelectIgnoreOutsideUntil) { return }
+      const target = event.target
+      if (target && typeof target.closest === "function" && target.closest(".custom-select")) { return }
+      closeAllCustomSelects()
+    }
+    document.addEventListener("pointerdown", handleCustomSelectOutsidePointer)
+    if (typeof PointerEvent === "undefined") {
+      document.addEventListener("touchstart", handleCustomSelectOutsidePointer, { passive: true })
+    }
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && activeCustomSelect) {
         event.preventDefault()
@@ -331,7 +370,9 @@
       }
     }, true)
     window.addEventListener("resize", closeAllCustomSelects)
-    drawerContent.addEventListener("scroll", closeAllCustomSelects, { passive: true })
+    drawerContent.addEventListener("scroll", function () {
+      if (activeCustomSelect) { positionCustomSelect(activeCustomSelect) }
+    }, { passive: true })
   }
 
   setupCustomSelects()

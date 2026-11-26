@@ -536,7 +536,8 @@ body {
   border-color: var(--orange);
 }
 
-.application-form .custom-select { position: relative; }
+.application-form .custom-select { position: relative; z-index: 1; }
+.application-form .custom-select.is-open { z-index: 60; }
 .application-form .custom-select__trigger,
 .application-form .custom-select__option {
   display: flex;
@@ -561,7 +562,7 @@ body {
 .application-form .custom-select.is-open .custom-select__chevron { transform: rotate(180deg); }
 .application-form .custom-select__panel {
   position: absolute;
-  z-index: 30;
+  z-index: 1000;
   right: 0;
   left: 0;
   max-height: var(--custom-select-max, 260px);
